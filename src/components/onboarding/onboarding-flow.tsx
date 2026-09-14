@@ -4,13 +4,16 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { completeOnboardingAction } from '@/app/actions/client'
-import { updateDisplayNameAction, updateUserProfileAction } from '@/app/actions/profile'
+import {
+  updateDisplayNameAction,
+  updateUserProfileAction,
+  uploadProfilePhotoAction,
+} from '@/app/actions/profile'
 import { ProfilePhotoUpload } from '@/components/onboarding/profile-photo-upload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { uploadProfilePhoto } from '@/lib/onboarding/upload-profile-photo'
 
 type OnboardingFlowProps = {
   initialDisplayName?: string | null
@@ -67,7 +70,9 @@ export function OnboardingFlow({
     setPhotoError(null)
 
     if (photoFile) {
-      const uploadResult = await uploadProfilePhoto(photoFile)
+      const formData = new FormData()
+      formData.append('file', photoFile)
+      const uploadResult = await uploadProfilePhotoAction(formData)
       if (!uploadResult.ok) {
         setPhotoError(uploadResult.error)
         toast.error(uploadResult.error)

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { getBrowserNhost, logoutClientSession, syncSessionCookie } from '@/lib/nhost/client'
+import { withDecodedToken } from '@/lib/nhost/session-cookie'
 import { startGoogleSignIn } from '@/lib/nhost/google-sign-in'
 import {
   getPostLoginPath,
@@ -62,7 +63,7 @@ export function LoginForm({
       return
     }
 
-    await syncSessionCookie(session)
+    await syncSessionCookie(withDecodedToken(session))
     window.location.assign(getPostLoginPath(nextPath))
   }
 

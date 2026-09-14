@@ -3,9 +3,7 @@
 import { useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-
-export const PROFILE_PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
-export const PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
+import { PROFILE_PHOTO_ACCEPT } from '@/lib/onboarding/profile-photo-constants'
 
 type ProfilePhotoUploadProps = {
   displayName: string

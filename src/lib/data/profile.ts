@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { clientGqlRequest } from '@/lib/graphql'
+import { getHasuraUserId } from '@/lib/nhost/session-cookie'
 import { requireServerSession } from '@/lib/nhost/server'
 import type { UserProfile } from '@/lib/types'
 
@@ -59,10 +60,7 @@ export async function completeOnboarding() {
     return { ok: false as const, error: 'Unauthorized' }
   }
 
-  const claims = auth.session.decodedToken?.['https://hasura.io/jwt/claims'] as
-    | Record<string, unknown>
-    | undefined
-  const userId = String(claims?.['x-hasura-user-id'] ?? '')
+  const userId = getHasuraUserId(auth.session)
   if (!userId) {
     return { ok: false as const, error: 'User not found' }
   }

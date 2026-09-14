@@ -6,6 +6,7 @@ import {
 import { cookies } from 'next/headers'
 import { getPublicNhostConfig } from './config'
 import {
+  ensureDecodedSession,
   hasRefreshToken,
   isSessionExpired,
   NHOST_SESSION_COOKIE,
@@ -36,11 +37,13 @@ export async function getServerNhost() {
 export async function requireServerSession(): Promise<ServerSessionResult> {
   const nhost = await getServerNhost()
   const hadStoredSession = Boolean(nhost.getUserSession())
-  const session = nhost.getUserSession()
+  const rawSession = nhost.getUserSession()
 
-  if (!session?.accessToken || !hasRefreshToken(session)) {
+  if (!rawSession?.accessToken || !hasRefreshToken(rawSession)) {
     return { ok: false, reason: hadStoredSession ? 'expired' : 'missing' }
   }
+
+  const session = ensureDecodedSession(rawSession)
 
   if (isSessionExpired(session, 60)) {
     return { ok: false, reason: 'expired' }

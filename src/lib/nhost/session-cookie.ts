@@ -74,6 +74,40 @@ export function withDecodedToken(session: StoredSession): StoredSession {
   return { ...session, decodedToken }
 }
 
+export function getHasuraClaimValue(
+  claims: Record<string, unknown> | undefined,
+  key: string,
+): string | null {
+  const value = claims?.[key]
+
+  if (typeof value === 'string' && value.length > 0) {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const match = value.find((item) => typeof item === 'string' && item.length > 0)
+    return match ? String(match) : null
+  }
+
+  return null
+}
+
+export function getHasuraUserId(session: StoredSession | null | undefined): string | null {
+  const claims = session?.decodedToken?.['https://hasura.io/jwt/claims'] as
+    | Record<string, unknown>
+    | undefined
+
+  return getHasuraClaimValue(claims, 'x-hasura-user-id')
+}
+
+export function ensureDecodedSession(session: StoredSession): StoredSession {
+  if (session.decodedToken || !session.accessToken) {
+    return session
+  }
+
+  return withDecodedToken(session)
+}
+
 export function isSessionExpired(session: StoredSession, marginSeconds = 0) {
   const expiresAt = session.decodedToken?.exp
   if (!expiresAt) return true

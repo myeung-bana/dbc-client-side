@@ -10,29 +10,45 @@ import {
   sessionCookieOptions,
 } from '@/lib/nhost/session-cookie'
 
-const publicPaths = ['/login', '/invite']
+const publicPaths = ['/', '/sessions', '/login', '/invite']
+const protectedPaths = ['/my-games', '/profile', '/onboarding']
+
+function isPathMatch(pathname: string, paths: string[]) {
+  return paths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  )
+}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const isPublic = isPathMatch(pathname, publicPaths)
+  const isProtected = isPathMatch(pathname, protectedPaths)
   const raw = request.cookies.get(NHOST_SESSION_COOKIE)?.value
-  const isPublic = publicPaths.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  )
 
   if (!raw) {
-    if (isPublic) return NextResponse.next()
-    return NextResponse.redirect(new URL('/login', request.url))
+    if (isProtected) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.next()
   }
 
   const session = parseSessionCookie(raw)
   if (!session?.accessToken) {
-    if (isPublic) return clearSessionCookie(NextResponse.next())
-    return clearSessionCookie(NextResponse.redirect(new URL('/login', request.url)))
+    if (isProtected) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return clearSessionCookie(NextResponse.redirect(loginUrl))
+    }
+    return clearSessionCookie(NextResponse.next())
   }
 
   if (!isSessionExpired(session, 60)) {
     if (pathname === '/login') {
-      return NextResponse.redirect(new URL('/sessions', request.url))
+      const next = request.nextUrl.searchParams.get('next')
+      const destination = next && next.startsWith('/') ? next : '/sessions'
+      return NextResponse.redirect(new URL(destination, request.url))
     }
     return NextResponse.next()
   }
@@ -41,16 +57,24 @@ export async function middleware(request: NextRequest) {
   const refreshed = await refreshStoredSession(session, subdomain, region)
 
   if (!refreshed) {
-    if (isPublic) {
+    if (isPublic && !isProtected) {
       return clearSessionCookie(NextResponse.next())
     }
     const loginUrl = new URL('/login?error=session-expired', request.url)
+    if (isProtected) {
+      loginUrl.searchParams.set('next', pathname)
+    }
     return clearSessionCookie(NextResponse.redirect(loginUrl))
   }
 
   const response =
     pathname === '/login'
-      ? NextResponse.redirect(new URL('/sessions', request.url))
+      ? NextResponse.redirect(
+          new URL(
+            request.nextUrl.searchParams.get('next') ?? '/sessions',
+            request.url,
+          ),
+        )
       : NextResponse.next()
 
   response.cookies.set(

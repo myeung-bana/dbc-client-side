@@ -34,7 +34,10 @@ export function getGraphqlRole(roles: string[]) {
   return null
 }
 
-export function getPostLoginPath() {
+export function getPostLoginPath(next?: string | null) {
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    return next
+  }
   return '/sessions'
 }
 

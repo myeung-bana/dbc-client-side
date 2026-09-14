@@ -2,7 +2,11 @@ import { redirect } from 'next/navigation'
 import { needsOnboarding } from '@/lib/data/profile'
 import { requireServerSession } from '@/lib/nhost/server'
 
-export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthenticatedLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const auth = await requireServerSession()
   if (!auth.ok) {
     redirect('/login')

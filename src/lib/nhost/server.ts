@@ -48,3 +48,7 @@ export async function requireServerSession(): Promise<ServerSessionResult> {
 
   return { ok: true, nhost, session }
 }
+
+export async function getOptionalServerSession(): Promise<ServerSessionResult> {
+  return requireServerSession()
+}

@@ -1,6 +1,11 @@
 import 'server-only'
 
-import { callClientFunction, clientGqlRequest } from '@/lib/graphql'
+import {
+  callClientFunction,
+  callPublicClientFunction,
+  clientGqlRequest,
+} from '@/lib/graphql'
+import { getOptionalServerSession } from '@/lib/nhost/server'
 import type { BookingStateResponse, MyBooking } from '@/lib/types'
 
 export async function getMyBookings() {
@@ -34,9 +39,20 @@ export async function getMyBookings() {
 }
 
 export async function getBookingState(sessionId: string) {
-  return callClientFunction<BookingStateResponse>('/client/sessions/booking-state', {
-    sessionId,
-  })
+  const auth = await getOptionalServerSession()
+  const payload = { sessionId }
+
+  if (auth.ok) {
+    return callClientFunction<BookingStateResponse>(
+      '/client/sessions/booking-state',
+      payload,
+    )
+  }
+
+  return callPublicClientFunction<BookingStateResponse>(
+    '/client/sessions/booking-state',
+    payload,
+  )
 }
 
 export async function bookSession(sessionId: string) {

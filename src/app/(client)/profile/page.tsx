@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ClientShell } from '@/components/client-shell'
+import { AppShell } from '@/components/app-shell'
 import { SignOutButton } from '@/components/sign-out-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,7 +28,7 @@ export default async function ProfilePage() {
   const memberships = membershipsResult.ok ? membershipsResult.data.space_memberships : []
 
   return (
-    <ClientShell title="Profile">
+    <AppShell title="Profile" isAuthenticated>
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -86,6 +86,6 @@ export default async function ProfilePage() {
 
         <SignOutButton />
       </div>
-    </ClientShell>
+    </AppShell>
   )
 }

@@ -2,12 +2,12 @@
 
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 import {
-  CircleCheckIcon,
-  InfoIcon,
-  Loader2Icon,
-  OctagonXIcon,
-  TriangleAlertIcon,
-} from 'lucide-react'
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Loader,
+  XCircle,
+} from 'react-feather'
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -15,11 +15,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="system"
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        success: <CheckCircle size={16} />,
+        info: <Info size={16} />,
+        warning: <AlertTriangle size={16} />,
+        error: <XCircle size={16} />,
+        loading: <Loader size={16} className="animate-spin" />,
       }}
       style={
         {

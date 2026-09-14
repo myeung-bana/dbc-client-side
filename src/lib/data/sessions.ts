@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { clientGqlRequest } from '@/lib/graphql'
+import { discoverableGqlRequest, clientGqlRequest } from '@/lib/graphql'
 import type { Session } from '@/lib/types'
 
 const SESSION_FIELDS = `
@@ -19,28 +19,37 @@ const SESSION_FIELDS = `
   }
 `
 
-export async function listDiscoverableSessions() {
+type DiscoverableSessionsOptions = {
+  spaceId?: string | null
+}
+
+export async function listDiscoverableSessions(options?: DiscoverableSessionsOptions) {
   const now = new Date().toISOString()
-  return clientGqlRequest<{ sessions: Session[] }>(
+  const where = options?.spaceId
+    ? {
+        status: { _eq: 'scheduled' },
+        ends_at: { _gte: now },
+        space_id: { _eq: options.spaceId },
+      }
+    : {
+        status: { _eq: 'scheduled' },
+        ends_at: { _gte: now },
+      }
+
+  return discoverableGqlRequest<{ sessions: Session[] }>(
     `
-      query DiscoverableSessions($now: timestamptz!) {
-        sessions(
-          where: {
-            status: { _eq: scheduled }
-            ends_at: { _gte: $now }
-          }
-          order_by: { starts_at: asc }
-        ) {
+      query DiscoverableSessions($where: sessions_bool_exp!) {
+        sessions(where: $where, order_by: { starts_at: asc }) {
           ${SESSION_FIELDS}
         }
       }
     `,
-    { now },
+    { where },
   )
 }
 
 export async function getSessionDetail(sessionId: string) {
-  return clientGqlRequest<{ sessions_by_pk: Session | null }>(
+  return discoverableGqlRequest<{ sessions_by_pk: Session | null }>(
     `
       query SessionDetail($sessionId: uuid!) {
         sessions_by_pk(id: $sessionId) {

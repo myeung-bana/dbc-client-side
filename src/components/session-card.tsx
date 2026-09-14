@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SessionCapacityBar } from '@/components/session-capacity-bar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,13 +14,25 @@ type SessionCardProps = {
   session: Session
   bookingState?: BookingState
   isMember?: boolean
+  isAuthenticated?: boolean
 }
 
-export function SessionCard({ session, bookingState, isMember = false }: SessionCardProps) {
+export function SessionCard({
+  session,
+  bookingState,
+  isMember = false,
+  isAuthenticated = false,
+}: SessionCardProps) {
   const confirmedCount = session.session_bookings?.length ?? 0
   const spotsLeft = Math.max(session.capacity - confirmedCount, 0)
-  const ctaLabel = bookingState ? getBookingCtaLabel(bookingState, isMember) : 'View'
-  const actionEnabled = bookingState ? isBookingActionEnabled(bookingState) : false
+  const ctaLabel = !isAuthenticated
+    ? 'View details'
+    : bookingState
+      ? getBookingCtaLabel(bookingState, isMember)
+      : 'View details'
+  const actionEnabled = isAuthenticated && bookingState
+    ? isBookingActionEnabled(bookingState)
+    : true
 
   return (
     <Card>
@@ -33,20 +46,19 @@ export function SessionCard({ session, bookingState, isMember = false }: Session
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-1 text-sm text-muted-foreground">
+        <div className="space-y-3 text-sm text-muted-foreground">
           <p>{formatSessionTimeRange(session)}</p>
           <p>{formatSessionVenue(session)}</p>
-          <p>{spotsLeft > 0 ? `${spotsLeft} spots left` : 'Full — waitlist open'}</p>
+          <SessionCapacityBar confirmed={confirmedCount} capacity={session.capacity} />
         </div>
-        <div className="flex gap-2">
-          <Button
-            className="flex-1"
-            disabled={bookingState ? !actionEnabled : false}
-            render={<Link href={`/sessions/${session.id}`} />}
-          >
-            {ctaLabel}
-          </Button>
-        </div>
+        <Button
+          className="w-full"
+          variant={isAuthenticated && actionEnabled ? 'default' : 'outline'}
+          disabled={isAuthenticated && bookingState ? !actionEnabled : false}
+          render={<Link href={`/sessions/${session.id}`} />}
+        >
+          {ctaLabel}
+        </Button>
       </CardContent>
     </Card>
   )

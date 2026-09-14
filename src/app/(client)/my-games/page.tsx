@@ -1,4 +1,4 @@
-import { ClientShell } from '@/components/client-shell'
+import { AppShell } from '@/components/app-shell'
 import { MyGamesList } from '@/components/my-games-list'
 import { getMyBookings } from '@/lib/data/bookings'
 export default async function MyGamesPage() {
@@ -20,12 +20,12 @@ export default async function MyGamesPage() {
     )
 
   return (
-    <ClientShell title="My Games">
+    <AppShell title="My Games" isAuthenticated>
       {!result.ok ? (
         <p className="text-sm text-destructive">{result.error}</p>
       ) : (
         <MyGamesList upcoming={upcomingBookings} past={pastBookings} />
       )}
-    </ClientShell>
+    </AppShell>
   )
 }

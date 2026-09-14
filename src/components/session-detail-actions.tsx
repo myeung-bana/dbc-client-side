@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { BookingSheet } from '@/components/booking-sheet'
+import { useHaptic } from '@/lib/haptics/use-haptic'
 import { Button } from '@/components/ui/button'
 import {
   getBookingCtaLabel,
@@ -20,6 +21,7 @@ export function SessionDetailActions({
   bookingState,
   isMember,
 }: SessionDetailActionsProps) {
+  const haptic = useHaptic()
   const [open, setOpen] = useState(false)
   const ctaLabel = getBookingCtaLabel(bookingState, isMember)
   const enabled = isBookingActionEnabled(bookingState)
@@ -29,7 +31,11 @@ export function SessionDetailActions({
       <Button
         className="w-full"
         disabled={!enabled}
-        onClick={() => enabled && setOpen(true)}
+        onClick={() => {
+          if (!enabled) return
+          haptic.light()
+          setOpen(true)
+        }}
       >
         {ctaLabel}
       </Button>

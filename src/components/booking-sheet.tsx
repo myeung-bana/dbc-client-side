@@ -13,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { useHaptic } from '@/lib/haptics/use-haptic'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
 import type { Session } from '@/lib/types'
 
@@ -25,20 +26,24 @@ type BookingSheetProps = {
 
 export function BookingSheet({ session, open, onOpenChange, ctaLabel }: BookingSheetProps) {
   const router = useRouter()
+  const haptic = useHaptic()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   function onConfirm() {
     setError(null)
+    haptic.medium()
     startTransition(async () => {
       const result = await bookSessionAction(session.id)
       if (!result.ok) {
         setError(result.error)
+        haptic.error()
         toast.error(result.error)
         return
       }
 
       const status = result.data?.booking?.status
+      haptic.success()
       toast.success(
         status === 'waitlisted' ? "You're on the waitlist" : 'Booking confirmed',
       )

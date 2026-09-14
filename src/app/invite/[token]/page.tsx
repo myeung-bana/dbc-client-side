@@ -21,7 +21,10 @@ export default async function InvitePage({
             <CardDescription>Sign in first to accept your space invite.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full" render={<Link href={`/login?next=/invite/${token}`} />}>
+            <Button
+              className="w-full"
+              render={<Link href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`} />}
+            >
               Sign in
             </Button>
           </CardContent>

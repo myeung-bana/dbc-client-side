@@ -1,9 +1,26 @@
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow'
-import { listPublicSpaces } from '@/lib/data/spaces'
+import { getProfile } from '@/lib/data/profile'
+
+function defaultDisplayName(user: {
+  displayName?: string | null
+  email?: string | null
+} | null) {
+  if (user?.displayName?.trim()) {
+    return user.displayName.trim()
+  }
+
+  const emailLocal = user?.email?.split('@')[0]?.trim()
+  return emailLocal ?? ''
+}
 
 export default async function OnboardingPage() {
-  const spacesResult = await listPublicSpaces()
-  const publicSpaces = spacesResult.ok ? spacesResult.data.spaces : []
+  const profileResult = await getProfile()
+  const user = profileResult.ok ? profileResult.data.user : null
 
-  return <OnboardingFlow publicSpaces={publicSpaces} />
+  return (
+    <OnboardingFlow
+      initialDisplayName={defaultDisplayName(user)}
+      initialAvatarUrl={user?.avatarUrl}
+    />
+  )
 }

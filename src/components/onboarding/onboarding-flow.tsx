@@ -4,38 +4,53 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { completeOnboardingAction } from '@/app/actions/client'
-import { updateDisplayNameAction } from '@/app/actions/profile'
+import { updateDisplayNameAction, updateUserProfileAction } from '@/app/actions/profile'
+import { ProfilePhotoUpload } from '@/components/onboarding/profile-photo-upload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { Space } from '@/lib/types'
+import { uploadProfilePhoto } from '@/lib/onboarding/upload-profile-photo'
 
 type OnboardingFlowProps = {
-  publicSpaces: Space[]
+  initialDisplayName?: string | null
+  initialAvatarUrl?: string | null
 }
 
-export function OnboardingFlow({ publicSpaces }: OnboardingFlowProps) {
+export function OnboardingFlow({
+  initialDisplayName = '',
+  initialAvatarUrl = null,
+}: OnboardingFlowProps) {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [displayName, setDisplayName] = useState('')
+  const [displayName, setDisplayName] = useState(initialDisplayName ?? '')
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [savingName, setSavingName] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  async function saveDisplayName() {
-    if (!displayName.trim()) {
+  async function onContinueFromStep1() {
+    const trimmed = displayName.trim()
+    if (!trimmed) {
       toast.error('Display name is required')
-      return false
+      return
     }
 
-    const result = await updateDisplayNameAction(displayName)
-    if (!result.ok) {
-      toast.error(result.error)
-      return false
+    setSavingName(true)
+    try {
+      const result = await updateDisplayNameAction(trimmed)
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+
+      setStep(2)
+    } finally {
+      setSavingName(false)
     }
-    return true
   }
 
-  async function finishOnboarding() {
+  function finishOnboarding() {
     startTransition(async () => {
       const result = await completeOnboardingAction()
       if (!result.ok) {
@@ -48,98 +63,113 @@ export function OnboardingFlow({ publicSpaces }: OnboardingFlowProps) {
     })
   }
 
+  async function onFinishWithPhoto() {
+    setPhotoError(null)
+
+    if (photoFile) {
+      const uploadResult = await uploadProfilePhoto(photoFile)
+      if (!uploadResult.ok) {
+        setPhotoError(uploadResult.error)
+        toast.error(uploadResult.error)
+        return
+      }
+
+      if (uploadResult.avatarUrl) {
+        const profileResult = await updateUserProfileAction({
+          avatarUrl: uploadResult.avatarUrl,
+        })
+        if (!profileResult.ok) {
+          setPhotoError(profileResult.error)
+          toast.error(profileResult.error)
+          return
+        }
+      }
+    }
+
+    finishOnboarding()
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Welcome</CardTitle>
-          <CardDescription>Step {step} of 3</CardDescription>
+          <CardTitle>{step === 1 ? 'Set up your profile' : 'Add a profile photo'}</CardTitle>
+          <CardDescription>Step {step} of 2</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {step === 1 ? (
             <>
+              <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">What should we call you?</p>
+                <p>
+                  Your display name appears on session rosters and booking lists so other players
+                  know who&apos;s joined.
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="displayName">Display name</Label>
                 <Input
                   id="displayName"
                   value={displayName}
                   onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="How should we show your name?"
+                  placeholder="e.g. Alex Chan"
+                  autoComplete="nickname"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  You can change this later from Profile.
+                </p>
               </div>
               <Button
                 className="w-full"
-                disabled={pending}
-                onClick={async () => {
-                  const ok = await saveDisplayName()
-                  if (ok) setStep(2)
-                }}
+                disabled={pending || savingName}
+                onClick={() => void onContinueFromStep1()}
               >
-                Continue
+                {savingName ? 'Saving…' : 'Continue'}
               </Button>
             </>
-          ) : null}
-
-          {step === 2 ? (
+          ) : (
             <>
-              <p className="text-sm text-muted-foreground">
-                Browse public spaces (optional). You can join via invite later from Profile.
-              </p>
-              <ul className="max-h-48 space-y-2 overflow-y-auto text-sm">
-                {publicSpaces.length === 0 ? (
-                  <li className="text-muted-foreground">No public spaces yet.</li>
-                ) : (
-                  publicSpaces.slice(0, 8).map((space) => (
-                    <li key={space.id} className="rounded-md border px-3 py-2">
-                      <p className="font-medium">{space.name}</p>
-                      {space.description ? (
-                        <p className="text-muted-foreground">{space.description}</p>
-                      ) : null}
-                    </li>
-                  ))
-                )}
-              </ul>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(3)}>
-                  Skip
+              <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Help teammates recognize you</p>
+                <p>
+                  A profile photo makes it easier to spot familiar faces on session rosters. This
+                  step is optional — you can skip it and add one later.
+                </p>
+              </div>
+              <ProfilePhotoUpload
+                displayName={displayName}
+                initialAvatarUrl={initialAvatarUrl}
+                selectedFile={photoFile}
+                onSelectFile={setPhotoFile}
+                disabled={pending}
+                error={photoError}
+              />
+              <div className="space-y-2">
+                <Button className="w-full" disabled={pending} onClick={() => void onFinishWithPhoto()}>
+                  {pending ? 'Finishing…' : photoFile ? 'Upload & finish' : 'Finish'}
                 </Button>
-                <Button className="flex-1" onClick={() => setStep(3)}>
-                  Continue
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    disabled={pending}
+                    onClick={() => setStep(1)}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="flex-1"
+                    disabled={pending}
+                    onClick={() => finishOnboarding()}
+                  >
+                    Skip for now
+                  </Button>
+                </div>
               </div>
             </>
-          ) : null}
-
-          {step === 3 ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Enable push notifications to hear about waitlist promotions and booking windows
-                (optional in v1).
-              </p>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  if ('Notification' in window) {
-                    void Notification.requestPermission()
-                  }
-                  void finishOnboarding()
-                }}
-                disabled={pending}
-              >
-                Enable notifications
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => void finishOnboarding()}
-                disabled={pending}
-              >
-                {pending ? 'Finishing…' : 'Skip for now'}
-              </Button>
-            </>
-          ) : null}
+          )}
         </CardContent>
       </Card>
     </div>

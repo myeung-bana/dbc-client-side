@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { getBrowserNhost, logoutClientSession, syncSessionCookie } from '@/lib/nhost/client'
+import { startGoogleSignIn } from '@/lib/nhost/google-sign-in'
 import {
   getPostLoginPath,
   getUserRolesFromSession,
@@ -98,12 +99,7 @@ export function LoginForm({
       await syncSessionCookie(null)
       const nhost = getBrowserNhost()
       nhost.sessionStorage.remove()
-      const providerUrl = nhost.auth.signInProviderURL('google')
-      const url = new URL(providerUrl)
-      if (nextPath) {
-        url.searchParams.set('redirectTo', `${window.location.origin}${nextPath}`)
-      }
-      window.location.assign(url.toString())
+      await startGoogleSignIn(nextPath)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed')
       setLoading(false)

@@ -3,13 +3,14 @@ import { cookies } from 'next/headers'
 import { AppShell } from '@/components/app-shell'
 import { AdSlot } from '@/components/ad-slot'
 import { SessionCard } from '@/components/session-card'
-import { SpaceContextHeader } from '@/components/space-context-header'
-import { StaleCacheIndicator } from '@/components/stale-cache-indicator'
-import { OpenLoginButton } from '@/components/open-login-button'
+import { SpaceSelector } from '@/components/space-selector'
+import { UserIdentityBar } from '@/components/user-identity-bar'
 import { Button } from '@/components/ui/button'
 import { listDiscoverableSessions } from '@/lib/data/sessions'
 import { listBrowsableSpaces } from '@/lib/data/spaces'
 import { listMyMemberships } from '@/lib/data/memberships'
+import { getProfile } from '@/lib/data/profile'
+import { primaryMembershipLabel } from '@/lib/profile/labels'
 import { BROWSE_SPACE_COOKIE } from '@/lib/nhost/browse-space'
 import { getOptionalServerSession } from '@/lib/nhost/server'
 
@@ -18,7 +19,6 @@ export default async function SessionsPage({
 }: {
   searchParams: Promise<{ space?: string }>
 }) {
-  const lastUpdated = new Date().toISOString()
   const { space: spaceSlug } = await searchParams
   const cookieStore = await cookies()
   const cookieSpaceId = cookieStore.get(BROWSE_SPACE_COOKIE)?.value ?? null
@@ -30,10 +30,14 @@ export default async function SessionsPage({
   const membershipsPromise = isAuthenticated
     ? listMyMemberships()
     : Promise.resolve({ ok: true as const, data: { space_memberships: [] } })
+  const profilePromise = isAuthenticated
+    ? getProfile()
+    : Promise.resolve({ ok: true as const, data: { user: null, profile: null } })
 
-  const [spacesResult, membershipsResult] = await Promise.all([
+  const [spacesResult, membershipsResult, profileResult] = await Promise.all([
     spacesPromise,
     membershipsPromise,
+    profilePromise,
   ])
 
   const spaces = spacesResult.ok ? spacesResult.data.spaces : []
@@ -53,29 +57,17 @@ export default async function SessionsPage({
       ? membershipsResult.data.space_memberships.filter((m) => m.status === 'active')
       : []
   const hasMemberships = activeMemberships.length > 0
+  const user = profileResult.ok ? profileResult.data.user : null
 
   return (
-    <AppShell title="Sessions" isAuthenticated={isAuthenticated}>
+    <AppShell title="Sessions" isAuthenticated={isAuthenticated} showHeaderAuth={false}>
       <div className="space-y-4">
-        <SpaceContextHeader
-          spaces={spaces}
-          activeSpaceId={activeSpaceId}
-          sessionCount={sessions.length}
+        <UserIdentityBar
+          isAuthenticated={isAuthenticated}
+          user={user}
+          activeMembershipCount={activeMemberships.length}
+          primaryRoleLabel={primaryMembershipLabel(activeMemberships)}
         />
-        <StaleCacheIndicator lastUpdated={lastUpdated} />
-
-        {!isAuthenticated ? (
-          <div className="rounded-lg border bg-muted/30 p-4 text-sm">
-            <p className="font-medium">Browse sessions as a guest</p>
-            <p className="mt-1 text-muted-foreground">
-              Tap any session for details. Sign in when you&apos;re ready to book.
-            </p>
-            <div className="mt-3">
-              <OpenLoginButton />
-            </div>
-          </div>
-        ) : null}
-
         {isAuthenticated && !hasMemberships ? (
           <div className="rounded-lg border bg-muted/30 p-4 text-sm">
             <p className="font-medium">You haven&apos;t joined a Space yet</p>
@@ -89,6 +81,12 @@ export default async function SessionsPage({
             </div>
           </div>
         ) : null}
+
+        <SpaceSelector
+          spaces={spaces}
+          activeSpaceId={activeSpaceId}
+          sessionCount={sessions.length}
+        />
 
         {!sessionsResult.ok ? (
           <p className="text-sm text-destructive">{sessionsResult.error}</p>

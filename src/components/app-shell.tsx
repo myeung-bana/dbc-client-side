@@ -7,22 +7,30 @@ import { Button } from '@/components/ui/button'
 type AppShellProps = {
   title?: string
   isAuthenticated: boolean
+  showHeaderAuth?: boolean
   children: React.ReactNode
 }
 
-export function AppShell({ title, isAuthenticated, children }: AppShellProps) {
+export function AppShell({
+  title,
+  isAuthenticated,
+  showHeaderAuth = true,
+  children,
+}: AppShellProps) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col bg-background">
       <PwaInstallBanner />
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur">
         <h1 className="text-lg font-semibold">{title ?? 'DBC Player'}</h1>
-        {isAuthenticated ? (
-          <Button variant="ghost" size="sm" render={<Link href="/profile" />}>
-            Account
-          </Button>
-        ) : (
-          <OpenLoginButton />
-        )}
+        {showHeaderAuth ? (
+          isAuthenticated ? (
+            <Button variant="ghost" size="sm" render={<Link href="/profile" />}>
+              Account
+            </Button>
+          ) : (
+            <OpenLoginButton />
+          )
+        ) : null}
       </header>
       <main className="flex-1 px-4 pb-24 pt-4">{children}</main>
       <BottomNav isAuthenticated={isAuthenticated} />

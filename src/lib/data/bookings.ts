@@ -9,32 +9,9 @@ import { getOptionalServerSession } from '@/lib/nhost/server'
 import type { BookingStateResponse, MyBooking } from '@/lib/types'
 
 export async function getMyBookings() {
-  return clientGqlRequest<{ session_bookings: MyBooking[] }>(
-    `
-      query MyBookings {
-        session_bookings(
-          where: { status: { _in: [confirmed, waitlisted] } }
-          order_by: { session: { starts_at: asc } }
-        ) {
-          id
-          session_id
-          status
-          created_at
-          session {
-            id
-            space_id
-            title
-            starts_at
-            ends_at
-            capacity
-            status
-            space { id name }
-            court { id name location { id name } }
-            location { id name }
-          }
-        }
-      }
-    `,
+  return callClientFunction<{ session_bookings: MyBooking[] }>(
+    '/client/bookings/mine',
+    {},
   )
 }
 

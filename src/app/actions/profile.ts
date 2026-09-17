@@ -65,6 +65,7 @@ export async function updateUserProfileAction(input: {
 
   revalidatePath('/onboarding')
   revalidatePath('/profile')
+  revalidatePath('/sessions')
 
   return { ok: true as const, data: result.data.updateUser }
 }

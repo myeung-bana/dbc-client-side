@@ -46,7 +46,6 @@ export type SessionBookingSummary = {
 
 export type MyBooking = {
   id: string
-  session_id: string
   status: 'confirmed' | 'waitlisted' | 'cancelled'
   created_at: string
   session: Session

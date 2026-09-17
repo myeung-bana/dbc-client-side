@@ -22,7 +22,7 @@ function BookingCard({ booking }: { booking: MyBooking }) {
 
   function onCancel() {
     startTransition(async () => {
-      const result = await cancelBookingAction(booking.session_id)
+      const result = await cancelBookingAction(booking.session.id)
       if (!result.ok) {
         toast.error(result.error)
         return
@@ -54,7 +54,7 @@ function BookingCard({ booking }: { booking: MyBooking }) {
           <Button
             variant="outline"
             size="sm"
-            render={<Link href={`/sessions/${booking.session_id}`} />}
+            render={<Link href={`/sessions/${booking.session.id}`} />}
           >
             View session
           </Button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { GoogleIcon } from '@/components/icons/google-icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -50,12 +51,13 @@ export function LoginForm({
 
   async function finalizeLogin() {
     const nhost = getBrowserNhost()
-    const session = nhost.getUserSession()
-    if (!session) {
+    const rawSession = nhost.getUserSession()
+    if (!rawSession?.accessToken || !rawSession.refreshToken) {
       setError('Login failed')
       return
     }
 
+    const session = withDecodedToken(rawSession)
     const roles = getUserRolesFromSession(session)
     if (!hasClientPortalAccess(roles)) {
       await logoutClientSession()
@@ -63,7 +65,7 @@ export function LoginForm({
       return
     }
 
-    await syncSessionCookie(withDecodedToken(session))
+    await syncSessionCookie(session)
     window.location.assign(getPostLoginPath(nextPath))
   }
 
@@ -109,7 +111,14 @@ export function LoginForm({
 
   const formContent = (
     <div className="space-y-4">
-      <Button className="w-full" variant="outline" onClick={onGoogleSignIn} disabled={loading}>
+      <Button
+        className="w-full"
+        variant="outline"
+        size="lg"
+        onClick={onGoogleSignIn}
+        disabled={loading}
+      >
+        <GoogleIcon />
         Continue with Google
       </Button>
       <div className="flex items-center gap-2">
@@ -141,16 +150,16 @@ export function LoginForm({
           />
         </div>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        <Button className="w-full" type="submit" disabled={loading}>
+        <Button className="w-full" size="lg" type="submit" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in with email'}
         </Button>
       </form>
       {isOverlay ? (
-        <Button variant="ghost" className="w-full" onClick={onDismiss} disabled={loading}>
+        <Button variant="ghost" size="lg" className="w-full" onClick={onDismiss} disabled={loading}>
           Continue browsing as guest
         </Button>
       ) : (
-        <Button variant="ghost" className="w-full" render={<Link href="/sessions" />}>
+        <Button variant="ghost" size="lg" className="w-full" render={<Link href="/sessions" />}>
           Continue browsing as guest
         </Button>
       )}

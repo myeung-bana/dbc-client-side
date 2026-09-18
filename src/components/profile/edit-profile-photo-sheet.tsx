@@ -23,6 +23,7 @@ type EditProfilePhotoSheetProps = {
   onOpenChange: (open: boolean) => void
   displayName: string
   initialAvatarUrl?: string | null
+  onAvatarUpdated?: (avatarUrl: string | null) => void
 }
 
 export function EditProfilePhotoSheet({
@@ -30,6 +31,7 @@ export function EditProfilePhotoSheet({
   onOpenChange,
   displayName,
   initialAvatarUrl,
+  onAvatarUpdated,
 }: EditProfilePhotoSheetProps) {
   const router = useRouter()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -65,6 +67,7 @@ export function EditProfilePhotoSheet({
       }
 
       toast.success('Profile photo updated')
+      onAvatarUpdated?.(uploadResult.avatarUrl)
       setPhotoFile(null)
       onOpenChange(false)
       router.refresh()
@@ -86,6 +89,7 @@ export function EditProfilePhotoSheet({
       }
 
       toast.success('Profile photo removed')
+      onAvatarUpdated?.(null)
       setPhotoFile(null)
       onOpenChange(false)
       router.refresh()

@@ -1,4 +1,5 @@
 import type { StoredSession } from '@nhost/nhost-js'
+import { getHasuraClaimValue } from '@/lib/nhost/session-cookie'
 
 export function getUserRolesFromSession(session: StoredSession | null | undefined) {
   const claims = session?.decodedToken?.['https://hasura.io/jwt/claims'] as
@@ -7,14 +8,18 @@ export function getUserRolesFromSession(session: StoredSession | null | undefine
   const allowedRoles = claims?.['x-hasura-allowed-roles']
 
   if (Array.isArray(allowedRoles)) {
-    return allowedRoles.map(String)
+    const roles = allowedRoles.map(String).filter(Boolean)
+    if (roles.length > 0) {
+      return roles
+    }
   }
 
-  if (typeof allowedRoles === 'string') {
+  if (typeof allowedRoles === 'string' && allowedRoles.length > 0) {
     return [allowedRoles]
   }
 
-  return []
+  const defaultRole = getHasuraClaimValue(claims, 'x-hasura-default-role')
+  return defaultRole ? [defaultRole] : []
 }
 
 export function hasClientPortalAccess(roles: string[]) {
@@ -22,15 +27,19 @@ export function hasClientPortalAccess(roles: string[]) {
     roles.includes('member') ||
     roles.includes('casual') ||
     roles.includes('organiser') ||
-    roles.includes('user')
+    roles.includes('user') ||
+    roles.includes('me')
   )
 }
 
 export function getGraphqlRole(roles: string[]) {
-  if (roles.includes('organiser')) return 'organiser'
+  // Prefer player-facing roles so self-service queries (profile, own bookings)
+  // work even when the account also has organiser access in the admin portal.
   if (roles.includes('member')) return 'member'
   if (roles.includes('casual')) return 'casual'
   if (roles.includes('user')) return 'user'
+  if (roles.includes('me')) return 'user'
+  if (roles.includes('organiser')) return 'organiser'
   return null
 }
 

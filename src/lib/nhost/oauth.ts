@@ -1,6 +1,31 @@
 'use client'
 
+import type { Session, SessionPayload } from '@nhost/nhost-js/auth'
+
 export const NHOST_PKCE_VERIFIER_KEY = 'nhost_pkce_verifier'
+
+function isAuthSession(value: unknown): value is Session {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    'accessToken' in value &&
+    'refreshToken' in value &&
+    typeof value.accessToken === 'string' &&
+    typeof value.refreshToken === 'string'
+  )
+}
+
+export function extractAuthSession(body: Session | SessionPayload | null | undefined) {
+  if (!body || typeof body !== 'object') {
+    return null
+  }
+
+  if ('session' in body && isAuthSession(body.session)) {
+    return body.session
+  }
+
+  return isAuthSession(body) ? body : null
+}
 export const NHOST_OAUTH_NEXT_KEY = 'nhost_oauth_next'
 
 export function getOAuthCallbackUrl() {

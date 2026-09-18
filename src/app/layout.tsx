@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { LoginOverlayProvider } from '@/components/login-overlay-provider'
+import { ProfileAvatarProvider } from '@/components/profile-avatar-provider'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -44,8 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className={`${geistSans.className} min-h-full font-sans`}>
         <LoginOverlayProvider>
-          {children}
-          <Toaster richColors closeButton />
+          <ProfileAvatarProvider>
+            {children}
+            <Toaster richColors closeButton />
+          </ProfileAvatarProvider>
         </LoginOverlayProvider>
       </body>
     </html>

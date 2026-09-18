@@ -32,7 +32,7 @@ export function AppShell({
           )
         ) : null}
       </header>
-      <main className="flex-1 px-4 pb-24 pt-4">{children}</main>
+      <main className="flex flex-1 flex-col px-4 pb-24 pt-4">{children}</main>
       <BottomNav isAuthenticated={isAuthenticated} />
     </div>
   )

@@ -1,9 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { PROFILE_PHOTO_ACCEPT } from '@/lib/onboarding/profile-photo-constants'
+import { getAvatarDisplaySrc } from '@/lib/profile/avatar-url'
 
 type ProfilePhotoUploadProps = {
   displayName: string
@@ -23,7 +24,15 @@ export function ProfilePhotoUpload({
   error,
 }: ProfilePhotoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialAvatarUrl ?? null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    getAvatarDisplaySrc(initialAvatarUrl) ?? initialAvatarUrl ?? null,
+  )
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(getAvatarDisplaySrc(initialAvatarUrl) ?? initialAvatarUrl ?? null)
+    }
+  }, [initialAvatarUrl, selectedFile])
 
   function onPickFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null

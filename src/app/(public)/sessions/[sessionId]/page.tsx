@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { getBookingState } from '@/lib/data/bookings'
 import { getSessionDetail, getSessionRosterPreview } from '@/lib/data/sessions'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
-import { getGraphqlRole, getUserRolesFromSession, isMemberRole } from '@/lib/nhost/roles'
+import { getGraphqlRole, getUserRolesFromSession } from '@/lib/nhost/roles'
 import { getOptionalServerSession } from '@/lib/nhost/server'
 export default async function SessionDetailPage({
   params,
@@ -22,7 +22,6 @@ export default async function SessionDetailPage({
   const auth = await getOptionalServerSession()
   const isAuthenticated = auth.ok
   const roles = auth.ok ? getUserRolesFromSession(auth.session) : []
-  const isMember = isMemberRole(roles)
 
   const detailResult = await getSessionDetail(sessionId)
   if (!detailResult.ok || !detailResult.data.sessions_by_pk) {
@@ -92,7 +91,6 @@ export default async function SessionDetailPage({
           <SessionDetailActions
             session={session}
             bookingState={bookingState}
-            isMember={isMember}
           />
         ) : (
           <SignInToBook sessionId={sessionId} />

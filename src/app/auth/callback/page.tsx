@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getBrowserNhost, logoutClientSession, syncSessionCookie } from '@/lib/nhost/client'
-import { consumeOAuthNextPath, NHOST_PKCE_VERIFIER_KEY } from '@/lib/nhost/oauth'
+import {
+  consumeOAuthNextPath,
+  extractAuthSession,
+  NHOST_PKCE_VERIFIER_KEY,
+} from '@/lib/nhost/oauth'
 import {
   getPostLoginPath,
   getUserRolesFromSession,
   hasClientPortalAccess,
 } from '@/lib/nhost/roles'
+import type { StoredSession } from '@nhost/nhost-js'
 import { withDecodedToken } from '@/lib/nhost/session-cookie'
 
 export default function AuthCallbackPage() {
@@ -35,14 +40,24 @@ export default function AuthCallbackPage() {
 
       try {
         const nhost = getBrowserNhost()
-        await nhost.auth.tokenExchange({ code, codeVerifier })
+        const { body } = await nhost.auth.tokenExchange({ code, codeVerifier })
+        const rawSession = extractAuthSession(body)
 
-        const session = nhost.getUserSession()
-        if (!session?.accessToken) {
+        if (rawSession) {
+          nhost.sessionStorage.set(rawSession)
+        }
+
+        const storedSession = nhost.getUserSession()
+        const resolvedSession = storedSession?.accessToken
+          ? storedSession
+          : rawSession ?? storedSession
+
+        if (!resolvedSession?.accessToken || !resolvedSession.refreshToken) {
           setError('Sign-in failed. Please try again.')
           return
         }
 
+        const session = withDecodedToken(resolvedSession) as StoredSession
         const roles = getUserRolesFromSession(session)
         if (!hasClientPortalAccess(roles)) {
           await logoutClientSession()
@@ -50,7 +65,7 @@ export default function AuthCallbackPage() {
           return
         }
 
-        await syncSessionCookie(withDecodedToken(session))
+        await syncSessionCookie(session)
         const nextPath = consumeOAuthNextPath()
         window.location.assign(getPostLoginPath(nextPath))
       } catch (err) {

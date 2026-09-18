@@ -1,4 +1,5 @@
 import type { StoredSession } from '@nhost/nhost-js'
+import type { Session } from '@nhost/nhost-js/auth'
 import { NHOST_SESSION_COOKIE } from './config'
 
 export { NHOST_SESSION_COOKIE }
@@ -42,12 +43,21 @@ function parseHasuraClaim(value: unknown) {
   return value
 }
 
+function decodeBase64Url(input: string) {
+  let base64 = input.replace(/-/g, '+').replace(/_/g, '/')
+  const pad = base64.length % 4
+  if (pad) {
+    base64 += '='.repeat(4 - pad)
+  }
+
+  return atob(base64)
+}
+
 export function decodeAccessToken(accessToken: string) {
   const payload = accessToken.split('.')[1]
   if (!payload) return null
 
-  const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
-  const json = JSON.parse(atob(normalized)) as Record<string, unknown>
+  const json = JSON.parse(decodeBase64Url(payload)) as Record<string, unknown>
   const hasuraClaims = json['https://hasura.io/jwt/claims']
 
   const decodedHasuraClaims =
@@ -65,7 +75,7 @@ export function decodeAccessToken(accessToken: string) {
   }
 }
 
-export function withDecodedToken(session: StoredSession): StoredSession {
+export function withDecodedToken<T extends Session>(session: T): T & { decodedToken?: StoredSession['decodedToken'] } {
   const decodedToken = decodeAccessToken(session.accessToken)
   if (!decodedToken) {
     return session

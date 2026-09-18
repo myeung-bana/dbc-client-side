@@ -13,14 +13,12 @@ import type { BookingState, Session } from '@/lib/types'
 type SessionCardProps = {
   session: Session
   bookingState?: BookingState
-  isMember?: boolean
   isAuthenticated?: boolean
 }
 
 export function SessionCard({
   session,
   bookingState,
-  isMember = false,
   isAuthenticated = false,
 }: SessionCardProps) {
   const confirmedCount = session.session_bookings?.length ?? 0
@@ -28,7 +26,7 @@ export function SessionCard({
   const ctaLabel = !isAuthenticated
     ? 'View details'
     : bookingState
-      ? getBookingCtaLabel(bookingState, isMember)
+      ? getBookingCtaLabel(bookingState)
       : 'View details'
   const actionEnabled = isAuthenticated && bookingState
     ? isBookingActionEnabled(bookingState)

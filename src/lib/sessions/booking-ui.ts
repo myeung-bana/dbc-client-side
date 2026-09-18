@@ -1,13 +1,12 @@
 import type { BookingState } from '@/lib/types'
 
-export function getBookingCtaLabel(state: BookingState, isMember: boolean) {
+export function getBookingCtaLabel(state: BookingState) {
   switch (state) {
     case 'open_window':
-      return 'Book now'
     case 'priority_window':
-      return isMember ? 'Book now (Priority)' : 'Book now'
+      return 'Book now'
     case 'locked_priority':
-      return 'Opens Thu'
+      return 'Book now'
     case 'waitlist_open':
       return 'Join waitlist'
     case 'already_confirmed':
@@ -18,14 +17,10 @@ export function getBookingCtaLabel(state: BookingState, isMember: boolean) {
       return 'Full'
     case 'closed':
     default:
-      return 'Session ended'
+      return 'Session started'
   }
 }
 
 export function isBookingActionEnabled(state: BookingState) {
-  return (
-    state === 'open_window' ||
-    state === 'priority_window' ||
-    state === 'waitlist_open'
-  )
+  return state === 'open_window' || state === 'priority_window' || state === 'waitlist_open'
 }

@@ -13,17 +13,15 @@ import type { BookingState, Session } from '@/lib/types'
 type SessionDetailActionsProps = {
   session: Session
   bookingState: BookingState
-  isMember: boolean
 }
 
 export function SessionDetailActions({
   session,
   bookingState,
-  isMember,
 }: SessionDetailActionsProps) {
   const haptic = useHaptic()
   const [open, setOpen] = useState(false)
-  const ctaLabel = getBookingCtaLabel(bookingState, isMember)
+  const ctaLabel = getBookingCtaLabel(bookingState)
   const enabled = isBookingActionEnabled(bookingState)
 
   return (

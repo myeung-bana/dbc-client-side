@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Icon } from '@/components/icon'
+import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { EditProfilePhotoSheet } from '@/components/profile/edit-profile-photo-sheet'
 import { UserAvatar } from '@/components/user-avatar'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,8 @@ type ProfileHeroProps = {
 
 export function ProfileHero({ displayName, email, avatarUrl }: ProfileHeroProps) {
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false)
+  const { avatarUrl: liveAvatarUrl, revision, updateAvatarUrl } = useProfileAvatar()
+  const resolvedAvatarUrl = liveAvatarUrl ?? avatarUrl ?? null
 
   return (
     <>
@@ -24,7 +27,12 @@ export function ProfileHero({ displayName, email, avatarUrl }: ProfileHeroProps)
           onClick={() => setPhotoSheetOpen(true)}
           aria-label="Change profile photo"
         >
-          <UserAvatar displayName={displayName} avatarUrl={avatarUrl} size="xl" />
+          <UserAvatar
+            displayName={displayName}
+            avatarUrl={resolvedAvatarUrl}
+            cacheRevision={revision}
+            size="xl"
+          />
           <span className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
             <Icon name="camera" size={14} strokeWidth={2.25} />
           </span>
@@ -44,7 +52,8 @@ export function ProfileHero({ displayName, email, avatarUrl }: ProfileHeroProps)
         open={photoSheetOpen}
         onOpenChange={setPhotoSheetOpen}
         displayName={displayName}
-        initialAvatarUrl={avatarUrl}
+        initialAvatarUrl={resolvedAvatarUrl}
+        onAvatarUpdated={updateAvatarUrl}
       />
     </>
   )

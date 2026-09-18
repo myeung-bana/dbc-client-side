@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Icon } from '@/components/icon'
 import { OpenLoginButton } from '@/components/open-login-button'
+import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { UserAvatar } from '@/components/user-avatar'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +26,8 @@ export function UserIdentityBar({
   primaryRoleLabel,
   className,
 }: UserIdentityBarProps) {
+  const { avatarUrl: liveAvatarUrl, revision } = useProfileAvatar()
+
   if (!isAuthenticated) {
     return (
       <div
@@ -48,6 +51,7 @@ export function UserIdentityBar({
   }
 
   const displayName = user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
+  const resolvedAvatarUrl = liveAvatarUrl ?? user?.avatarUrl ?? null
   const subline =
     activeMembershipCount > 0
       ? [primaryRoleLabel, `${activeMembershipCount} ${activeMembershipCount === 1 ? 'space' : 'spaces'}`]
@@ -63,7 +67,12 @@ export function UserIdentityBar({
         className,
       )}
     >
-      <UserAvatar displayName={displayName} avatarUrl={user?.avatarUrl} size="sm" />
+      <UserAvatar
+        displayName={displayName}
+        avatarUrl={resolvedAvatarUrl}
+        cacheRevision={revision}
+        size="sm"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">Hi, {displayName}</p>
         <p className="truncate text-sm text-muted-foreground">{subline}</p>

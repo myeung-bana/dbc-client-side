@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/app-shell'
+import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { ProfileAccountSection } from '@/components/profile/profile-account-section'
 import { ProfileHero } from '@/components/profile/profile-hero'
 import { ProfileInviteSection } from '@/components/profile/profile-invite-section'
@@ -20,6 +21,7 @@ export default async function ProfilePage() {
 
   return (
     <AppShell title="Profile" isAuthenticated showHeaderAuth={false}>
+      <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
       <div className="space-y-6">
         <ProfileHero
           displayName={displayName}

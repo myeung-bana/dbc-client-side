@@ -68,7 +68,7 @@ export type BookingState =
 
 export type BookingStateResponse = {
   state: BookingState
-  priorityOpensAt: string
+  bookingClosesAt?: string
   confirmedCount: number
   capacity: number
 }

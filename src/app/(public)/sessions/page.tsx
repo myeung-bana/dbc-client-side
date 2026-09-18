@@ -1,12 +1,12 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { AppShell } from '@/components/app-shell'
-import { AdSlot } from '@/components/ad-slot'
-import { SessionCard } from '@/components/session-card'
-import { SpaceSelector } from '@/components/space-selector'
+import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
+import { SessionsFeedSkeleton } from '@/components/sessions-feed-skeleton'
+import { UpcomingSessions } from '@/components/upcoming-sessions'
 import { UserIdentityBar } from '@/components/user-identity-bar'
 import { Button } from '@/components/ui/button'
-import { listDiscoverableSessions } from '@/lib/data/sessions'
 import { listBrowsableSpaces } from '@/lib/data/spaces'
 import { listMyMemberships } from '@/lib/data/memberships'
 import { getProfile } from '@/lib/data/profile'
@@ -47,21 +47,21 @@ export default async function SessionsPage({
     activeSpaceId = spaces.find((space) => space.slug === spaceSlug)?.id ?? activeSpaceId
   }
 
-  const sessionsResult = await listDiscoverableSessions(
-    activeSpaceId ? { spaceId: activeSpaceId } : undefined,
-  )
-
-  const sessions = sessionsResult.ok ? sessionsResult.data.sessions : []
   const activeMemberships =
     membershipsResult.ok
       ? membershipsResult.data.space_memberships.filter((m) => m.status === 'active')
       : []
   const hasMemberships = activeMemberships.length > 0
   const user = profileResult.ok ? profileResult.data.user : null
+  const displayName =
+    user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
 
   return (
     <AppShell title="Sessions" isAuthenticated={isAuthenticated} showHeaderAuth={false}>
-      <div className="space-y-4">
+      {isAuthenticated ? (
+        <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
+      ) : null}
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
         <UserIdentityBar
           isAuthenticated={isAuthenticated}
           user={user}
@@ -82,26 +82,16 @@ export default async function SessionsPage({
           </div>
         ) : null}
 
-        <SpaceSelector
-          spaces={spaces}
-          activeSpaceId={activeSpaceId}
-          sessionCount={sessions.length}
-        />
-
-        {!sessionsResult.ok ? (
-          <p className="text-sm text-destructive">{sessionsResult.error}</p>
-        ) : null}
-
-        {sessions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No upcoming sessions found.</p>
-        ) : (
-          sessions.map((session, index) => (
-            <div key={session.id} className="space-y-4">
-              <SessionCard session={session} isAuthenticated={isAuthenticated} />
-              {index === 3 ? <AdSlot zone="A" /> : null}
-            </div>
-          ))
-        )}
+        <Suspense
+          key={activeSpaceId ?? 'all'}
+          fallback={<SessionsFeedSkeleton />}
+        >
+          <UpcomingSessions
+            spaces={spaces}
+            activeSpaceId={activeSpaceId}
+            isAuthenticated={isAuthenticated}
+          />
+        </Suspense>
       </div>
     </AppShell>
   )

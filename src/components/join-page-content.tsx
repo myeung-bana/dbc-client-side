@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess, toastWarning } from '@/lib/toast/haptic-toast'
 import { redeemInviteAction, resolveInviteAction } from '@/app/actions/client'
 import { InviteQrScannerView } from '@/components/invite-qr-scanner-view'
 import { JoinScanResultCard } from '@/components/join-scan-result-card'
@@ -65,7 +65,7 @@ export function JoinPageContent({ isAuthenticated, initialCode }: JoinPageConten
   function onScanDetected(value: string) {
     const parsed = parseJoinScan(value)
     if (!parsed) {
-      toast.error('Unrecognized QR code')
+      toastWarning('Unrecognized QR code')
       return
     }
 
@@ -78,24 +78,24 @@ export function JoinPageContent({ isAuthenticated, initialCode }: JoinPageConten
     setScanning(false)
     setMode('enter')
     resolveCode(parsed.code)
-    toast.success('Invite code scanned')
+    toastSuccess('Invite code scanned')
   }
 
   function onRedeem() {
     const normalized = parseInviteCode(code)
     if (!normalized) {
-      toast.error('Enter a valid invite code')
+      toastWarning('Enter a valid invite code')
       return
     }
 
     startRedeem(async () => {
       const result = await redeemInviteAction(normalized)
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
-      toast.success(
+      toastSuccess(
         result.data.alreadyMember ? 'You are already in this space' : 'Joined space successfully',
       )
       router.push('/sessions')
@@ -124,7 +124,7 @@ export function JoinPageContent({ isAuthenticated, initialCode }: JoinPageConten
             onScan={onScanDetected}
             onScanError={() => {
               setScanning(false)
-              toast.error('Camera access is unavailable. Enter the code manually.')
+              toastWarning('Camera access is unavailable. Enter the code manually.')
               setMode('enter')
             }}
             onResume={() => setScanning(true)}

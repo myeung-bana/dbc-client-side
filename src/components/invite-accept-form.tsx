@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import { acceptInviteAction } from '@/app/actions/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,10 +20,10 @@ export function InviteAcceptForm({ defaultMembershipId }: { defaultMembershipId?
         membershipId: membershipId.trim() || undefined,
       })
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
-      toast.success('Invite accepted')
+      toastSuccess('Invite accepted')
       router.push('/sessions')
       router.refresh()
     })
@@ -41,7 +41,7 @@ export function InviteAcceptForm({ defaultMembershipId }: { defaultMembershipId?
           required
         />
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" haptic="medium" disabled={pending}>
         {pending ? 'Accepting…' : 'Accept invite'}
       </Button>
     </form>

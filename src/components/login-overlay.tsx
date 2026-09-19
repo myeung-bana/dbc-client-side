@@ -6,7 +6,7 @@ import { LoginForm } from '@/app/login/login-form'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogPortal } from '@/components/ui/dialog'
 import { APP_NAME } from '@/lib/brand'
-import { useHaptic } from '@/lib/haptics/use-haptic'
+import { triggerHaptic } from '@/lib/haptics/haptics'
 import { cn } from '@/lib/utils'
 
 type LoginOverlayProps = {
@@ -22,14 +22,8 @@ export function LoginOverlay({
   nextPath,
   initialError,
 }: LoginOverlayProps) {
-  const haptic = useHaptic()
-
   function handleOpenChange(nextOpen: boolean) {
-    if (nextOpen) {
-      haptic.light()
-    } else {
-      haptic.selection()
-    }
+    triggerHaptic(nextOpen ? 'light' : 'selection')
     onOpenChange(nextOpen)
   }
 

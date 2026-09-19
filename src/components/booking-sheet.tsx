@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import { bookSessionAction } from '@/app/actions/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,8 +12,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useHaptic } from '@/lib/haptics/use-haptic'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import type { Session } from '@/lib/types'
 
 type BookingSheetProps = {
@@ -26,27 +25,21 @@ type BookingSheetProps = {
 
 export function BookingSheet({ session, open, onOpenChange, ctaLabel }: BookingSheetProps) {
   const router = useRouter()
-  const haptic = useHaptic()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   function onConfirm() {
     setError(null)
-    haptic.medium()
     startTransition(async () => {
       const result = await bookSessionAction(session.id)
       if (!result.ok) {
         setError(result.error)
-        haptic.error()
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
       const status = result.data?.booking?.status
-      haptic.success()
-      toast.success(
-        status === 'waitlisted' ? "You're on the waitlist" : 'Booking confirmed',
-      )
+      toastSuccess(status === 'waitlisted' ? "You're on the waitlist" : 'Booking confirmed')
       onOpenChange(false)
       router.push('/my-games')
       router.refresh()
@@ -70,7 +63,7 @@ export function BookingSheet({ session, open, onOpenChange, ctaLabel }: BookingS
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             Cancel
           </Button>
-          <Button onClick={onConfirm} disabled={pending}>
+          <Button haptic="medium" onClick={onConfirm} disabled={pending}>
             {pending ? 'Booking…' : ctaLabel}
           </Button>
         </SheetFooter>

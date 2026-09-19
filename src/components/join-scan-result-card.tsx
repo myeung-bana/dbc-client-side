@@ -61,7 +61,7 @@ export function JoinScanResultCard({
             <OpenLoginButton nextPath={loginNextPath} className="w-full" />
           </div>
         ) : canRedeem ? (
-          <Button className="mt-4 w-full" disabled={pending} onClick={onJoin}>
+          <Button className="mt-4 w-full" haptic="medium" disabled={pending} onClick={onJoin}>
             {pending ? 'Joining…' : 'Join space'}
           </Button>
         ) : (
@@ -89,7 +89,7 @@ export function JoinScanResultCard({
             <OpenLoginButton nextPath={loginNextPath} className="w-full" />
           </div>
         ) : (
-          <Button className="mt-4 w-full" disabled={pending} onClick={onJoin}>
+          <Button className="mt-4 w-full" haptic="medium" disabled={pending} onClick={onJoin}>
             {pending ? 'Joining…' : `Join as ${INTENT_LABELS[slugJoin.intent]}`}
           </Button>
         )}

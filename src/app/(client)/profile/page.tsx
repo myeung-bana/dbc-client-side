@@ -3,6 +3,7 @@ import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { ProfileAccountSection } from '@/components/profile/profile-account-section'
 import { ProfileHero } from '@/components/profile/profile-hero'
 import { ProfileInviteSection } from '@/components/profile/profile-invite-section'
+import { ProfilePreferencesSection } from '@/components/profile/profile-preferences-section'
 import { ProfileSpacesSection } from '@/components/profile/profile-spaces-section'
 import { SignOutButton } from '@/components/sign-out-button'
 import { listMyFollows, listMyMemberships } from '@/lib/data/memberships'
@@ -43,6 +44,7 @@ export default async function ProfilePage() {
           avatarUrl={user?.avatarUrl}
         />
         <ProfileAccountSection displayName={displayName} email={user?.email} />
+        <ProfilePreferencesSection />
         <ProfileSpacesSection
           memberships={memberships}
           follows={follows}

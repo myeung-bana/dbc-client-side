@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { HapticProvider } from '@/components/haptic-provider'
 import { LoginOverlayProvider } from '@/components/login-overlay-provider'
 import { ProfileAvatarProvider } from '@/components/profile-avatar-provider'
 import { Toaster } from '@/components/ui/sonner'
@@ -45,12 +46,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className={`${geistSans.className} min-h-full font-sans`}>
-        <LoginOverlayProvider>
-          <ProfileAvatarProvider>
-            {children}
-            <Toaster richColors closeButton />
-          </ProfileAvatarProvider>
-        </LoginOverlayProvider>
+        <HapticProvider>
+          <LoginOverlayProvider>
+            <ProfileAvatarProvider>
+              {children}
+              <Toaster richColors closeButton />
+            </ProfileAvatarProvider>
+          </LoginOverlayProvider>
+        </HapticProvider>
       </body>
     </html>
   )

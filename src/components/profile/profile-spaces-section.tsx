@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import { unfollowSpaceAction } from '@/app/actions/client'
 import { AcceptPendingInviteButton } from '@/components/accept-pending-invite-button'
 import { SpaceLogo } from '@/components/space-logo'
@@ -125,10 +125,10 @@ function FollowRow({ follow }: { follow: Follow }) {
     startTransition(async () => {
       const result = await unfollowSpaceAction(follow.space_id)
       if (!result.ok) {
-        toast.error(result.error ?? 'Could not unfollow space')
+        toastError(result.error ?? 'Could not unfollow space')
         return
       }
-      toast.success('Unfollowed space')
+      toastSuccess('Unfollowed space')
       router.refresh()
     })
   }

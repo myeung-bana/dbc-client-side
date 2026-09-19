@@ -4,12 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { InviteQrScannerSheet } from '@/components/invite-qr-scanner-sheet'
 import { Icon } from '@/components/icon'
-import { OpenLoginButton } from '@/components/open-login-button'
+import { useLoginOverlay } from '@/components/login-overlay-provider'
 import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { UserAvatar } from '@/components/user-avatar'
 import { Button } from '@/components/ui/button'
 import { APP_SHORT_NAME } from '@/lib/brand'
-import { useHaptic } from '@/lib/haptics/use-haptic'
+import { triggerHaptic } from '@/lib/haptics/haptics'
 
 type NavUser = {
   displayName?: string | null
@@ -33,7 +33,7 @@ export function AppTopNav({
   isAuthenticated,
   navUser,
 }: AppTopNavProps) {
-  const haptic = useHaptic()
+  const { openLogin } = useLoginOverlay()
   const [scanOpen, setScanOpen] = useState(false)
   const { avatarUrl: liveAvatarUrl, displayName: liveDisplayName, revision } =
     useProfileAvatar()
@@ -44,6 +44,7 @@ export function AppTopNav({
     navUser?.displayName ??
     'Player'
   const avatarUrl = liveAvatarUrl ?? navUser?.avatarUrl ?? null
+  const showQrScan = showScan && isAuthenticated
 
   return (
     <>
@@ -65,7 +66,7 @@ export function AppTopNav({
             <Link
               href="/sessions"
               className="text-lg font-semibold tracking-tight"
-              onClick={() => haptic.selection()}
+              onClick={() => triggerHaptic('selection')}
             >
               {APP_SHORT_NAME}
             </Link>
@@ -89,18 +90,22 @@ export function AppTopNav({
                 />
               </Button>
             ) : (
-              <OpenLoginButton nextPath="/sessions" variant="ghost" size="sm" />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Sign in"
+                onClick={() => openLogin({ next: '/sessions' })}
+              >
+                <Icon name="user" size={22} />
+              </Button>
             )}
 
-            {showScan ? (
+            {showQrScan ? (
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="Scan invite QR code"
-                onClick={() => {
-                  haptic.light()
-                  setScanOpen(true)
-                }}
+                onClick={() => setScanOpen(true)}
               >
                 <Icon name="qr" size={22} />
               </Button>
@@ -109,11 +114,13 @@ export function AppTopNav({
         </div>
       </header>
 
-      <InviteQrScannerSheet
-        open={scanOpen}
-        onOpenChange={setScanOpen}
-        isAuthenticated={isAuthenticated}
-      />
+      {showQrScan ? (
+        <InviteQrScannerSheet
+          open={scanOpen}
+          onOpenChange={setScanOpen}
+          isAuthenticated={isAuthenticated}
+        />
+      ) : null}
     </>
   )
 }

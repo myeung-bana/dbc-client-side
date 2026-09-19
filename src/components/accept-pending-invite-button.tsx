@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import { acceptInviteAction } from '@/app/actions/client'
 import { Button } from '@/components/ui/button'
 
@@ -20,10 +20,10 @@ export function AcceptPendingInviteButton({
     startTransition(async () => {
       const result = await acceptInviteAction({ membershipId })
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
-      toast.success(`Joined ${spaceName}`)
+      toastSuccess(`Joined ${spaceName}`)
       router.refresh()
     })
   }

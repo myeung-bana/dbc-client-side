@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess, toastWarning } from '@/lib/toast/haptic-toast'
 import { updateDisplayNameAction } from '@/app/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,7 +40,7 @@ export function EditDisplayNameSheet({
   async function onSave() {
     const trimmed = displayName.trim()
     if (!trimmed) {
-      toast.error('Display name is required')
+      toastWarning('Display name is required')
       return
     }
 
@@ -48,11 +48,11 @@ export function EditDisplayNameSheet({
     try {
       const result = await updateDisplayNameAction(trimmed)
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
-      toast.success('Display name updated')
+      toastSuccess('Display name updated')
       onOpenChange(false)
       router.refresh()
     } finally {

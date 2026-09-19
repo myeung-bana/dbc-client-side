@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import { cancelBookingAction } from '@/app/actions/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,10 +24,10 @@ function BookingCard({ booking }: { booking: MyBooking }) {
     startTransition(async () => {
       const result = await cancelBookingAction(booking.session.id)
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
-      toast.success('Booking cancelled')
+      toastSuccess('Booking cancelled')
     })
   }
 
@@ -59,7 +59,7 @@ function BookingCard({ booking }: { booking: MyBooking }) {
             View session
           </Button>
           {booking.status !== 'cancelled' ? (
-            <Button variant="destructive" size="sm" onClick={onCancel} disabled={pending}>
+            <Button variant="destructive" size="sm" haptic="medium" onClick={onCancel} disabled={pending}>
               {pending ? 'Cancelling…' : 'Cancel'}
             </Button>
           ) : null}

@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { useLoginOverlay } from '@/components/login-overlay-provider'
-import { useHaptic } from '@/lib/haptics/use-haptic'
 import { cn } from '@/lib/utils'
 
 type OpenLoginButtonProps = {
@@ -23,17 +22,14 @@ export function OpenLoginButton({
   fullWidth = false,
 }: OpenLoginButtonProps) {
   const { openLogin } = useLoginOverlay()
-  const haptic = useHaptic()
 
   return (
     <Button
       size={size}
       variant={variant}
+      haptic="medium"
       className={cn(fullWidth && 'w-full', className)}
-      onClick={() => {
-        haptic.light()
-        openLogin({ next: nextPath })
-      }}
+      onClick={() => openLogin({ next: nextPath })}
     >
       {label}
     </Button>

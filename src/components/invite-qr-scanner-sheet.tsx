@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import {
   joinBySlugAction,
   redeemInviteAction,
@@ -21,12 +20,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useHaptic } from '@/lib/haptics/use-haptic'
 import {
   joinScanNextPath,
   parseJoinScan,
   type JoinScanResult,
 } from '@/lib/invite/parse-join-scan'
+import { toastError, toastSuccess, toastWarning } from '@/lib/toast/haptic-toast'
 import type { ResolvedSlugJoin, ResolvedSpaceInvite } from '@/lib/types'
 
 type InviteQrScannerSheetProps = {
@@ -41,7 +40,6 @@ export function InviteQrScannerSheet({
   isAuthenticated,
 }: InviteQrScannerSheetProps) {
   const router = useRouter()
-  const haptic = useHaptic()
   const [scanning, setScanning] = useState(true)
   const [scanResult, setScanResult] = useState<JoinScanResult | null>(null)
   const [oneOffInvite, setOneOffInvite] = useState<ResolvedSpaceInvite | null>(null)
@@ -69,11 +67,10 @@ export function InviteQrScannerSheet({
   const handleScan = useCallback((raw: string) => {
     const parsed = parseJoinScan(raw)
     if (!parsed) {
-      toast.error('Unrecognized QR code')
+      toastWarning('Unrecognized QR code')
       return
     }
 
-    haptic.light()
     setScanning(false)
     setScanResult(parsed)
     setOneOffInvite(null)
@@ -88,7 +85,7 @@ export function InviteQrScannerSheet({
           return
         }
         setOneOffInvite(result.data.invite)
-        toast.success('Invite code scanned')
+        toastSuccess('Invite code scanned')
         return
       }
 
@@ -98,9 +95,9 @@ export function InviteQrScannerSheet({
         return
       }
       setSlugJoin(result.data)
-      toast.success('Join link scanned')
+      toastSuccess('Join link scanned')
     })
-  }, [haptic])
+  }, [])
 
   function onJoin() {
     if (!scanResult) return
@@ -109,22 +106,21 @@ export function InviteQrScannerSheet({
       if (scanResult.type === 'one_off_code') {
         const result = await redeemInviteAction(scanResult.code)
         if (!result.ok) {
-          toast.error(result.error)
+          toastError(result.error)
           return
         }
-        toast.success(
+        toastSuccess(
           result.data.alreadyMember ? 'You are already in this space' : 'Joined space successfully',
         )
       } else {
         const result = await joinBySlugAction(scanResult.slug, scanResult.intent)
         if (!result.ok) {
-          toast.error(result.error)
+          toastError(result.error)
           return
         }
-        toast.success('Joined space successfully')
+        toastSuccess('Joined space successfully')
       }
 
-      haptic.success()
       onOpenChange(false)
       router.push(
         scanResult.type === 'standing_slug'
@@ -151,7 +147,7 @@ export function InviteQrScannerSheet({
             onScan={handleScan}
             onScanError={() => {
               setScanning(false)
-              toast.error('Camera access is unavailable. Enter the code manually.')
+              toastWarning('Camera access is unavailable. Enter the code manually.')
             }}
             onResume={() => setScanning(true)}
           />

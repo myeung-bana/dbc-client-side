@@ -14,11 +14,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useHaptic } from '@/lib/haptics/use-haptic'
+import { triggerHaptic } from '@/lib/haptics/haptics'
 import { membershipLabel } from '@/lib/profile/labels'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import type { Space } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
 
 type SpaceSelectorProps = {
   spaces: Space[]
@@ -40,7 +40,6 @@ export function SpaceSelector({
   followedSpaceIds = [],
 }: SpaceSelectorProps) {
   const router = useRouter()
-  const haptic = useHaptic()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [pending, startTransition] = useTransition()
@@ -76,7 +75,7 @@ export function SpaceSelector({
       return
     }
 
-    haptic.selection()
+    triggerHaptic('selection')
     setOpen(false)
     setQuery('')
 
@@ -103,10 +102,10 @@ export function SpaceSelector({
     startTransition(async () => {
       const result = await followSpaceAction({ spaceId: space.id })
       if (!result.ok) {
-        toast.error(result.error ?? 'Could not follow space')
+        toastError(result.error ?? 'Could not follow space')
         return
       }
-      toast.success(`Following ${space.name}`)
+      toastSuccess(`Following ${space.name}`)
       router.refresh()
     })
   }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import {
   updateUserProfileAction,
   uploadProfilePhotoAction,
@@ -53,7 +53,7 @@ export function EditProfilePhotoSheet({
       const uploadResult = await uploadProfilePhotoAction(formData)
       if (!uploadResult.ok) {
         setError(uploadResult.error)
-        toast.error(uploadResult.error)
+        toastError(uploadResult.error)
         return
       }
 
@@ -62,11 +62,11 @@ export function EditProfilePhotoSheet({
       })
       if (!profileResult.ok) {
         setError(profileResult.error)
-        toast.error(profileResult.error)
+        toastError(profileResult.error)
         return
       }
 
-      toast.success('Profile photo updated')
+      toastSuccess('Profile photo updated')
       onAvatarUpdated?.(uploadResult.avatarUrl)
       setPhotoFile(null)
       onOpenChange(false)
@@ -84,11 +84,11 @@ export function EditProfilePhotoSheet({
       const result = await updateUserProfileAction({ avatarUrl: null })
       if (!result.ok) {
         setError(result.error)
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
-      toast.success('Profile photo removed')
+      toastSuccess('Profile photo removed')
       onAvatarUpdated?.(null)
       setPhotoFile(null)
       onOpenChange(false)

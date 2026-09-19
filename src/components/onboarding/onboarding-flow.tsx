@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toastError, toastSuccess, toastWarning } from '@/lib/toast/haptic-toast'
 import { completeOnboardingAction } from '@/app/actions/client'
 import {
   updateDisplayNameAction,
@@ -36,7 +36,7 @@ export function OnboardingFlow({
   async function onContinueFromStep1() {
     const trimmed = displayName.trim()
     if (!trimmed) {
-      toast.error('Display name is required')
+      toastWarning('Display name is required')
       return
     }
 
@@ -44,7 +44,7 @@ export function OnboardingFlow({
     try {
       const result = await updateDisplayNameAction(trimmed)
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
@@ -58,10 +58,10 @@ export function OnboardingFlow({
     startTransition(async () => {
       const result = await completeOnboardingAction()
       if (!result.ok) {
-        toast.error('error' in result ? result.error : 'Failed to complete onboarding')
+        toastError('error' in result ? result.error : 'Failed to complete onboarding')
         return
       }
-      toast.success(`Welcome to ${APP_NAME}`)
+      toastSuccess(`Welcome to ${APP_NAME}`)
       router.push('/sessions')
       router.refresh()
     })
@@ -76,7 +76,7 @@ export function OnboardingFlow({
       const uploadResult = await uploadProfilePhotoAction(formData)
       if (!uploadResult.ok) {
         setPhotoError(uploadResult.error)
-        toast.error(uploadResult.error)
+        toastError(uploadResult.error)
         return
       }
 
@@ -86,7 +86,7 @@ export function OnboardingFlow({
         })
         if (!profileResult.ok) {
           setPhotoError(profileResult.error)
-          toast.error(profileResult.error)
+          toastError(profileResult.error)
           return
         }
       }
@@ -128,6 +128,7 @@ export function OnboardingFlow({
               </div>
               <Button
                 className="w-full"
+                haptic="medium"
                 disabled={pending || savingName}
                 onClick={() => void onContinueFromStep1()}
               >
@@ -152,7 +153,7 @@ export function OnboardingFlow({
                 error={photoError}
               />
               <div className="space-y-2">
-                <Button className="w-full" disabled={pending} onClick={() => void onFinishWithPhoto()}>
+                <Button className="w-full" haptic="medium" disabled={pending} onClick={() => void onFinishWithPhoto()}>
                   {pending ? 'Finishing…' : photoFile ? 'Upload & finish' : 'Finish'}
                 </Button>
                 <div className="flex gap-2">

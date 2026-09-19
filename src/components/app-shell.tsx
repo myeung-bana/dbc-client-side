@@ -1,5 +1,6 @@
 import { BottomNav } from '@/components/bottom-nav'
 import { AppTopNav } from '@/components/app-top-nav'
+import { AppShellMain } from '@/components/app-shell-main'
 import { PwaInstallBanner } from '@/components/pwa-install-banner'
 
 type NavUser = {
@@ -39,7 +40,7 @@ export function AppShell({
           navUser={navUser}
         />
       ) : null}
-      <main className="flex flex-1 flex-col px-4 pb-24 pt-4">{children}</main>
+      <AppShellMain>{children}</AppShellMain>
       <BottomNav isAuthenticated={isAuthenticated} />
     </div>
   )

@@ -2,24 +2,16 @@
 
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
-import { useHaptic } from '@/lib/haptics/use-haptic'
 import { APP_NAME } from '@/lib/brand'
 import { usePwaInstall } from '@/lib/pwa/use-pwa-install'
 
 export function PwaInstallBanner() {
-  const haptic = useHaptic()
   const { shouldShow, canInstall, isIos, promptInstall, dismiss } = usePwaInstall()
 
   if (!shouldShow) return null
 
   async function onInstall() {
-    haptic.medium()
     await promptInstall()
-  }
-
-  function onDismiss() {
-    haptic.light()
-    dismiss()
   }
 
   return (
@@ -38,6 +30,7 @@ export function PwaInstallBanner() {
             size="sm"
             variant="secondary"
             className="h-7"
+            haptic="medium"
             onClick={onInstall}
           >
             <Icon name="download" size={14} className="mr-1" />
@@ -49,7 +42,7 @@ export function PwaInstallBanner() {
           variant="ghost"
           className="text-primary-foreground hover:bg-primary-foreground/10"
           aria-label="Dismiss install banner"
-          onClick={onDismiss}
+          onClick={dismiss}
         >
           <Icon name="x" size={16} />
         </Button>

@@ -3,14 +3,14 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import { unfollowSpaceAction } from '@/app/actions/client'
 import { Icon } from '@/components/icon'
 import { SpaceLogo } from '@/components/space-logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useHaptic } from '@/lib/haptics/use-haptic'
+import { triggerHaptic } from '@/lib/haptics/haptics'
 import type { MySpaceEntry } from '@/lib/spaces/my-spaces'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import { cn } from '@/lib/utils'
 
 type SpacesPageContentProps = {
@@ -79,13 +79,12 @@ function SpaceRow({
   showBorder: boolean
 }) {
   const router = useRouter()
-  const haptic = useHaptic()
   const [pending, startTransition] = useTransition()
   const [unfollowPending, startUnfollow] = useTransition()
 
   function onSelect() {
     if (pending) return
-    haptic.selection()
+    triggerHaptic('selection')
     startTransition(async () => {
       await fetch('/api/browse-space', {
         method: 'POST',
@@ -101,10 +100,10 @@ function SpaceRow({
     startUnfollow(async () => {
       const result = await unfollowSpaceAction(entry.spaceId)
       if (!result.ok) {
-        toast.error(result.error ?? 'Could not unfollow space')
+        toastError(result.error ?? 'Could not unfollow space')
         return
       }
-      toast.success('Unfollowed space')
+      toastSuccess('Unfollowed space')
       router.refresh()
     })
   }

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { BookingSheet } from '@/components/booking-sheet'
-import { useHaptic } from '@/lib/haptics/use-haptic'
 import { Button } from '@/components/ui/button'
 import {
   getBookingCtaLabel,
@@ -24,7 +23,6 @@ export function SessionDetailActions({
   spaceSlug,
   booking,
 }: SessionDetailActionsProps) {
-  const haptic = useHaptic()
   const [open, setOpen] = useState(false)
   const { state } = booking
   const ctaLabel = getBookingCtaLabel(state)
@@ -36,7 +34,7 @@ export function SessionDetailActions({
     return (
       <div className="space-y-2">
         {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
-        <Button className="w-full" render={<Link href={joinHref} />}>
+        <Button className="w-full" haptic="medium" render={<Link href={joinHref} />}>
           {ctaLabel}
         </Button>
       </div>
@@ -48,10 +46,10 @@ export function SessionDetailActions({
       {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
       <Button
         className="w-full"
+        haptic="medium"
         disabled={!enabled}
         onClick={() => {
           if (!enabled) return
-          haptic.light()
           setOpen(true)
         }}
       >

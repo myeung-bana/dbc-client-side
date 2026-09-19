@@ -6,7 +6,7 @@ import { joinBySlugAction, resolveSlugJoinAction } from '@/app/actions/client'
 import { OpenLoginButton } from '@/components/open-login-button'
 import { Button } from '@/components/ui/button'
 import type { ResolvedSlugJoin } from '@/lib/types'
-import { toast } from 'sonner'
+import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 
 type SlugJoinPageContentProps = {
   slug: string
@@ -66,11 +66,11 @@ export function SlugJoinPageContent({
     startJoin(async () => {
       const result = await joinBySlugAction(slug, intent)
       if (!result.ok) {
-        toast.error(result.error)
+        toastError(result.error)
         return
       }
 
-      toast.success(INTENT_COPY[intent].success)
+      toastSuccess(INTENT_COPY[intent].success)
       router.push(`/sessions?space=${encodeURIComponent(slug)}`)
       router.refresh()
     })
@@ -102,7 +102,7 @@ export function SlugJoinPageContent({
           <OpenLoginButton nextPath={loginNextPath} className="w-full" />
         </div>
       ) : resolved ? (
-        <Button className="w-full" disabled={joinPending} onClick={onJoin}>
+        <Button className="w-full" haptic="medium" disabled={joinPending} onClick={onJoin}>
           {joinPending ? 'Joining…' : INTENT_COPY[intent].action}
         </Button>
       ) : null}

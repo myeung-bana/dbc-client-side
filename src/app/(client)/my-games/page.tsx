@@ -1,9 +1,15 @@
 import { AppShell } from '@/components/app-shell'
+import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { MyGamesList } from '@/components/my-games-list'
 import { getMyBookings } from '@/lib/data/bookings'
+import { getProfile } from '@/lib/data/profile'
+
 export default async function MyGamesPage() {
-  const result = await getMyBookings()
+  const [result, profileResult] = await Promise.all([getMyBookings(), getProfile()])
   const bookings = result.ok ? result.data.session_bookings : []
+  const user = profileResult.ok ? profileResult.data.user : null
+  const displayName =
+    user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
 
   const now = new Date()
   const upcomingBookings = bookings
@@ -20,7 +26,11 @@ export default async function MyGamesPage() {
     )
 
   return (
-    <AppShell title="My Games" isAuthenticated>
+    <AppShell
+      isAuthenticated
+      navUser={{ displayName, avatarUrl: user?.avatarUrl }}
+    >
+      <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
       {!result.ok ? (
         <p className="text-sm text-destructive">{result.error}</p>
       ) : (

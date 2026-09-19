@@ -1,37 +1,44 @@
-import Link from 'next/link'
 import { BottomNav } from '@/components/bottom-nav'
-import { OpenLoginButton } from '@/components/open-login-button'
+import { AppTopNav } from '@/components/app-top-nav'
 import { PwaInstallBanner } from '@/components/pwa-install-banner'
-import { Button } from '@/components/ui/button'
+
+type NavUser = {
+  displayName?: string | null
+  avatarUrl?: string | null
+}
 
 type AppShellProps = {
+  header?: 'brand' | 'detail' | 'none'
   title?: string
+  backHref?: string
+  showScan?: boolean
   isAuthenticated: boolean
-  showHeaderAuth?: boolean
+  navUser?: NavUser | null
   children: React.ReactNode
 }
 
 export function AppShell({
+  header = 'brand',
   title,
+  backHref,
+  showScan = true,
   isAuthenticated,
-  showHeaderAuth = true,
+  navUser,
   children,
 }: AppShellProps) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col bg-background">
       <PwaInstallBanner />
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur">
-        <h1 className="text-lg font-semibold">{title ?? 'DBC Player'}</h1>
-        {showHeaderAuth ? (
-          isAuthenticated ? (
-            <Button variant="ghost" size="sm" render={<Link href="/profile" />}>
-              Account
-            </Button>
-          ) : (
-            <OpenLoginButton />
-          )
-        ) : null}
-      </header>
+      {header !== 'none' ? (
+        <AppTopNav
+          variant={header}
+          title={title}
+          backHref={backHref}
+          showScan={showScan}
+          isAuthenticated={isAuthenticated}
+          navUser={navUser}
+        />
+      ) : null}
       <main className="flex flex-1 flex-col px-4 pb-24 pt-4">{children}</main>
       <BottomNav isAuthenticated={isAuthenticated} />
     </div>

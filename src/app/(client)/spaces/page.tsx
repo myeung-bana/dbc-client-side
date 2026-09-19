@@ -1,15 +1,18 @@
+import { cookies } from 'next/headers'
 import { AppShell } from '@/components/app-shell'
 import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
-import { ProfileAccountSection } from '@/components/profile/profile-account-section'
-import { ProfileHero } from '@/components/profile/profile-hero'
-import { ProfileInviteSection } from '@/components/profile/profile-invite-section'
-import { ProfileSpacesSection } from '@/components/profile/profile-spaces-section'
-import { SignOutButton } from '@/components/sign-out-button'
+import { SpacesPageContent } from '@/components/spaces-page-content'
 import { listMyFollows, listMyMemberships } from '@/lib/data/memberships'
 import { listPassBalances } from '@/lib/data/passes'
 import { getProfile } from '@/lib/data/profile'
+import { BROWSE_SPACE_COOKIE } from '@/lib/nhost/browse-space'
+import { resolveActiveSpaceId } from '@/lib/spaces/active-space'
+import { buildMySpaces } from '@/lib/spaces/my-spaces'
 
-export default async function ProfilePage() {
+export default async function SpacesPage() {
+  const cookieStore = await cookies()
+  const cookieSpaceId = cookieStore.get(BROWSE_SPACE_COOKIE)?.value ?? null
+
   const [profileResult, membershipsResult, followsResult, passBalancesResult] =
     await Promise.all([
       getProfile(),
@@ -27,32 +30,26 @@ export default async function ProfilePage() {
         balance: row.balance,
       }))
     : []
+
+  const mySpaces = buildMySpaces(memberships, follows, passBalances)
+  const activeSpaceId = resolveActiveSpaceId({
+    cookieSpaceId,
+    mySpaces,
+  })
+
   const displayName =
     user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
 
   return (
     <AppShell
       isAuthenticated
-      navUser={{ displayName, avatarUrl: user?.avatarUrl }}
+      navUser={{
+        displayName,
+        avatarUrl: user?.avatarUrl,
+      }}
     >
       <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
-      <div className="space-y-6">
-        <ProfileHero
-          displayName={displayName}
-          email={user?.email}
-          avatarUrl={user?.avatarUrl}
-        />
-        <ProfileAccountSection displayName={displayName} email={user?.email} />
-        <ProfileSpacesSection
-          memberships={memberships}
-          follows={follows}
-          passBalances={passBalances}
-        />
-        <ProfileInviteSection />
-        <div className="pt-2 [&_button]:w-full">
-          <SignOutButton />
-        </div>
-      </div>
+      <SpacesPageContent mySpaces={mySpaces} activeSpaceId={activeSpaceId} />
     </AppShell>
   )
 }

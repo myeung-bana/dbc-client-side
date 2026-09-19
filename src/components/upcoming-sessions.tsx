@@ -1,19 +1,19 @@
 import { AdSlot } from '@/components/ad-slot'
+import { ActiveSpaceBar } from '@/components/active-space-bar'
 import { SessionCard } from '@/components/session-card'
 import { SessionsEmptyState } from '@/components/sessions-empty-state'
-import { SpaceSelector } from '@/components/space-selector'
 import { listDiscoverableSessions } from '@/lib/data/sessions'
-import type { Space } from '@/lib/types'
+import type { MySpaceEntry } from '@/lib/spaces/my-spaces'
 
 type UpcomingSessionsProps = {
-  spaces: Space[]
   activeSpaceId: string | null
+  activeSpace: MySpaceEntry | null
   isAuthenticated: boolean
 }
 
 export async function UpcomingSessions({
-  spaces,
   activeSpaceId,
+  activeSpace,
   isAuthenticated,
 }: UpcomingSessionsProps) {
   const sessionsResult = await listDiscoverableSessions(
@@ -24,10 +24,10 @@ export async function UpcomingSessions({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <SpaceSelector
-        spaces={spaces}
-        activeSpaceId={activeSpaceId}
+      <ActiveSpaceBar
+        activeSpace={activeSpace}
         sessionCount={sessions.length}
+        isAuthenticated={isAuthenticated}
       />
 
       {!sessionsResult.ok ? (

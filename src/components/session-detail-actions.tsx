@@ -1,31 +1,51 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { BookingSheet } from '@/components/booking-sheet'
 import { useHaptic } from '@/lib/haptics/use-haptic'
 import { Button } from '@/components/ui/button'
 import {
   getBookingCtaLabel,
+  getBookingHint,
+  getBookingJoinHref,
   isBookingActionEnabled,
 } from '@/lib/sessions/booking-ui'
-import type { BookingState, Session } from '@/lib/types'
+import type { BookingStateResponse, Session } from '@/lib/types'
 
 type SessionDetailActionsProps = {
   session: Session
-  bookingState: BookingState
+  spaceSlug?: string | null
+  booking: BookingStateResponse
 }
 
 export function SessionDetailActions({
   session,
-  bookingState,
+  spaceSlug,
+  booking,
 }: SessionDetailActionsProps) {
   const haptic = useHaptic()
   const [open, setOpen] = useState(false)
-  const ctaLabel = getBookingCtaLabel(bookingState)
-  const enabled = isBookingActionEnabled(bookingState)
+  const { state } = booking
+  const ctaLabel = getBookingCtaLabel(state)
+  const enabled = isBookingActionEnabled(state)
+  const joinHref = getBookingJoinHref(state, spaceSlug)
+  const hint = getBookingHint(state, booking.canBookReason)
+
+  if (joinHref) {
+    return (
+      <div className="space-y-2">
+        {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
+        <Button className="w-full" render={<Link href={joinHref} />}>
+          {ctaLabel}
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <>
+    <div className="space-y-2">
+      {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
       <Button
         className="w-full"
         disabled={!enabled}
@@ -43,6 +63,6 @@ export function SessionDetailActions({
         onOpenChange={setOpen}
         ctaLabel={ctaLabel}
       />
-    </>
+    </div>
   )
 }

@@ -31,7 +31,7 @@ export function ProfileSettingsRow({
   showChevron = false,
   className,
 }: {
-  label: string
+  label: ReactNode
   value?: ReactNode
   hint?: string
   onClick?: () => void

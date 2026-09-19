@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { APP_NAME } from '@/lib/brand'
 
 type OnboardingFlowProps = {
   initialDisplayName?: string | null
@@ -60,7 +61,7 @@ export function OnboardingFlow({
         toast.error('error' in result ? result.error : 'Failed to complete onboarding')
         return
       }
-      toast.success('Welcome to DBC')
+      toast.success(`Welcome to ${APP_NAME}`)
       router.push('/sessions')
       router.refresh()
     })

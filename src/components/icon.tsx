@@ -13,9 +13,36 @@ import {
   Loader,
   User,
   X,
+  Activity,
   type IconProps as FeatherIconProps,
 } from 'react-feather'
 import { cn } from 'cn'
+
+function QrIcon({ size = 24, className, strokeWidth = 2 }: FeatherIconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <path d="M14 14h.01" />
+      <path d="M18 14h.01" />
+      <path d="M14 18h.01" />
+      <path d="M18 18h.01" />
+      <path d="M21 14v4h-4" />
+    </svg>
+  )
+}
 
 const ICONS = {
   calendar: Calendar,
@@ -24,9 +51,11 @@ const ICONS = {
   user: User,
   search: Search,
   grid: Grid,
+  activity: Activity,
   download: Download,
   x: X,
   info: Info,
+  qr: QrIcon,
   'chevron-right': ChevronRight,
   'check-circle': CheckCircle,
   'alert-triangle': AlertTriangle,

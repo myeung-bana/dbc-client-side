@@ -53,6 +53,7 @@ export async function listBrowsableSpaces() {
           description
           visibility
           status
+          logo_url
         }
       }
     `,

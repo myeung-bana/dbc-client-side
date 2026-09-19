@@ -5,14 +5,18 @@ import { AppShell } from '@/components/app-shell'
 import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { SessionsFeedSkeleton } from '@/components/sessions-feed-skeleton'
 import { UpcomingSessions } from '@/components/upcoming-sessions'
-import { UserIdentityBar } from '@/components/user-identity-bar'
 import { Button } from '@/components/ui/button'
+import { listMyFollows, listMyMemberships } from '@/lib/data/memberships'
+import { listPassBalances } from '@/lib/data/passes'
 import { listBrowsableSpaces } from '@/lib/data/spaces'
-import { listMyMemberships } from '@/lib/data/memberships'
 import { getProfile } from '@/lib/data/profile'
-import { primaryMembershipLabel } from '@/lib/profile/labels'
 import { BROWSE_SPACE_COOKIE } from '@/lib/nhost/browse-space'
 import { getOptionalServerSession } from '@/lib/nhost/server'
+import {
+  getActiveSpaceEntry,
+  resolveActiveSpaceId,
+} from '@/lib/spaces/active-space'
+import { buildMySpaces, hasMySpaces } from '@/lib/spaces/my-spaces'
 
 export default async function SessionsPage({
   searchParams,
@@ -30,53 +34,73 @@ export default async function SessionsPage({
   const membershipsPromise = isAuthenticated
     ? listMyMemberships()
     : Promise.resolve({ ok: true as const, data: { space_memberships: [] } })
+  const followsPromise = isAuthenticated
+    ? listMyFollows()
+    : Promise.resolve({ ok: true as const, data: { space_follows: [] } })
+  const passBalancesPromise = isAuthenticated
+    ? listPassBalances()
+    : Promise.resolve({ ok: true as const, data: { balances: [] } })
   const profilePromise = isAuthenticated
     ? getProfile()
     : Promise.resolve({ ok: true as const, data: { user: null, profile: null } })
 
-  const [spacesResult, membershipsResult, profileResult] = await Promise.all([
-    spacesPromise,
-    membershipsPromise,
-    profilePromise,
-  ])
+  const [spacesResult, membershipsResult, followsResult, passBalancesResult, profileResult] =
+    await Promise.all([
+      spacesPromise,
+      membershipsPromise,
+      followsPromise,
+      passBalancesPromise,
+      profilePromise,
+    ])
 
-  const spaces = spacesResult.ok ? spacesResult.data.spaces : []
-  let activeSpaceId = cookieSpaceId
+  const publicSpaces = spacesResult.ok ? spacesResult.data.spaces : []
+  const memberships = membershipsResult.ok ? membershipsResult.data.space_memberships : []
+  const follows = followsResult.ok ? followsResult.data.space_follows : []
+  const passBalances = passBalancesResult.ok
+    ? passBalancesResult.data.balances.map((row) => ({
+        spaceId: row.spaceId,
+        balance: row.balance,
+      }))
+    : []
 
-  if (spaceSlug) {
-    activeSpaceId = spaces.find((space) => space.slug === spaceSlug)?.id ?? activeSpaceId
-  }
+  const mySpaces = buildMySpaces(memberships, follows, passBalances)
+  const activeSpaceId = resolveActiveSpaceId({
+    cookieSpaceId,
+    spaceSlug,
+    mySpaces,
+    allSpaces: publicSpaces,
+  })
+  const activeSpace = getActiveSpaceEntry(activeSpaceId, mySpaces, publicSpaces)
 
-  const activeMemberships =
-    membershipsResult.ok
-      ? membershipsResult.data.space_memberships.filter((m) => m.status === 'active')
-      : []
-  const hasMemberships = activeMemberships.length > 0
   const user = profileResult.ok ? profileResult.data.user : null
   const displayName =
     user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
 
   return (
-    <AppShell title="Sessions" isAuthenticated={isAuthenticated} showHeaderAuth={false}>
+    <AppShell
+      isAuthenticated={isAuthenticated}
+      navUser={
+        isAuthenticated
+          ? { displayName, avatarUrl: user?.avatarUrl }
+          : null
+      }
+    >
       {isAuthenticated ? (
         <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col gap-4">
-        <UserIdentityBar
-          isAuthenticated={isAuthenticated}
-          user={user}
-          activeMembershipCount={activeMemberships.length}
-          primaryRoleLabel={primaryMembershipLabel(activeMemberships)}
-        />
-        {isAuthenticated && !hasMemberships ? (
+        {isAuthenticated && !hasMySpaces(mySpaces) ? (
           <div className="rounded-lg border bg-muted/30 p-4 text-sm">
-            <p className="font-medium">You haven&apos;t joined a Space yet</p>
+            <p className="font-medium">Connect with a space</p>
             <p className="mt-1 text-muted-foreground">
-              Browse public sessions below or enter an invite code from Profile.
+              Follow or join a space to see its sessions here, or browse public sessions below.
             </p>
-            <div className="mt-3 flex gap-2">
-              <Button size="sm" render={<Link href="/profile" />}>
-                Enter invite
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="sm" render={<Link href="/join" />}>
+                Join a space
+              </Button>
+              <Button size="sm" variant="outline" render={<Link href="/spaces" />}>
+                My spaces
               </Button>
             </div>
           </div>
@@ -87,8 +111,8 @@ export default async function SessionsPage({
           fallback={<SessionsFeedSkeleton />}
         >
           <UpcomingSessions
-            spaces={spaces}
             activeSpaceId={activeSpaceId}
+            activeSpace={activeSpace}
             isAuthenticated={isAuthenticated}
           />
         </Suspense>

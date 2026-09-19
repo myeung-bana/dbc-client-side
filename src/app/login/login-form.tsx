@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { getBrowserNhost, logoutClientSession, syncSessionCookie } from '@/lib/nhost/client'
+import { APP_NAME } from '@/lib/brand'
 import { withDecodedToken } from '@/lib/nhost/session-cookie'
 import { startGoogleSignIn } from '@/lib/nhost/google-sign-in'
 import {
@@ -174,7 +175,7 @@ export function LoginForm({
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign in to DBC Player</CardTitle>
+          <CardTitle>Sign in to {APP_NAME}</CardTitle>
           <CardDescription>
             Browse sessions as a guest anytime. Sign in when you&apos;re ready to book.
           </CardDescription>

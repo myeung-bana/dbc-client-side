@@ -17,13 +17,15 @@ type NavItem = {
 
 const guestItems: NavItem[] = [
   { href: '/sessions', label: 'Sessions', icon: 'calendar' },
+  { href: '/join', label: 'Join', icon: 'search' },
   { label: 'Account', icon: 'user', action: 'login' },
 ]
 
 const authItems: NavItem[] = [
   { href: '/sessions', label: 'Sessions', icon: 'calendar' },
-  { href: '/my-games', label: 'My Games', icon: 'grid', requiresAuth: true },
-  { href: '/profile', label: 'Profile', icon: 'user', requiresAuth: true },
+  { href: '/spaces', label: 'Spaces', icon: 'grid', requiresAuth: true },
+  { href: '/my-games', label: 'My Games', icon: 'activity', requiresAuth: true },
+  { href: '/passes', label: 'Passes', icon: 'check-circle', requiresAuth: true },
 ]
 
 type BottomNavProps = {

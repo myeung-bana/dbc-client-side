@@ -11,7 +11,7 @@ const SESSION_FIELDS = `
   ends_at
   capacity
   status
-  space { id name }
+  space { id name slug }
   court { id name location { id name } }
   location { id name }
   session_bookings(where: { status: { _eq: confirmed } }) {

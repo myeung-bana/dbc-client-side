@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { APP_NAME, APP_SHORT_NAME, APP_TAGLINE } from '@/lib/brand'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'DBC Player',
-    short_name: 'DBC',
-    description: 'Book badminton sessions across your spaces',
+    name: APP_NAME,
+    short_name: APP_SHORT_NAME,
+    description: APP_TAGLINE,
     start_url: '/sessions',
     display: 'standalone',
     background_color: '#ffffff',

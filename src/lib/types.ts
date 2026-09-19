@@ -5,6 +5,7 @@ export type Space = {
   description?: string | null
   status: 'active' | 'archived'
   visibility?: 'public' | 'invite_only'
+  logo_url?: string | null
   created_at?: string
 }
 
@@ -17,6 +18,37 @@ export type SpaceMembership = {
   space?: Space | null
 }
 
+export type SpaceFollow = {
+  id: string
+  space_id: string
+  user_id: string
+  created_at: string
+  space?: Space | null
+}
+
+export type ResolvedSlugJoin = {
+  space: {
+    id: string
+    name: string
+    slug: string
+    visibility?: 'public' | 'invite_only'
+  }
+  intent: 'follow' | 'casual' | 'member'
+}
+
+export type ResolvedSpaceInvite = {
+  code: string
+  role: 'member' | 'casual'
+  label?: string | null
+  expiresAt: string
+  status: 'open' | 'redeemed' | 'revoked' | 'expired'
+  space?: {
+    id: string
+    name: string
+    slug: string
+  } | null
+}
+
 export type Session = {
   id: string
   space_id: string
@@ -25,7 +57,7 @@ export type Session = {
   ends_at: string
   capacity: number
   status: 'scheduled' | 'cancelled'
-  space?: { id: string; name: string } | null
+  space?: { id: string; name: string; slug?: string } | null
   court?: { id: string; name: string; location?: { id: string; name: string } | null } | null
   location?: { id: string; name: string } | null
   session_bookings?: SessionBookingSummary[]
@@ -65,10 +97,17 @@ export type BookingState =
   | 'waitlist_open'
   | 'already_confirmed'
   | 'already_waitlisted'
+  | 'no_membership'
+  | 'follow_only'
+  | 'no_credits'
 
 export type BookingStateResponse = {
   state: BookingState
   bookingClosesAt?: string
   confirmedCount: number
   capacity: number
+  membershipRole?: 'member' | 'casual' | 'organiser' | null
+  passBalance?: number | null
+  canBookReason?: string | null
+  isGuest?: boolean
 }

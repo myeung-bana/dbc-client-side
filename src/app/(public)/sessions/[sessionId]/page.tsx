@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
 import { AdSlot } from '@/components/ad-slot'
@@ -7,7 +6,6 @@ import { SessionCapacityBar } from '@/components/session-capacity-bar'
 import { SignInToBook } from '@/components/sign-in-to-book'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { getBookingState } from '@/lib/data/bookings'
 import { getSessionDetail, getSessionRosterPreview } from '@/lib/data/sessions'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
@@ -37,17 +35,15 @@ export default async function SessionDetailPage({
 
   const roster = rosterResult?.ok ? rosterResult.data.session_bookings ?? [] : []
   const confirmedCount = session.session_bookings?.length ?? roster.length
-  const bookingState = stateResult.ok ? stateResult.data.state : 'closed'
+  const booking = stateResult.ok
+    ? stateResult.data
+    : { state: 'closed' as const, confirmedCount, capacity: session.capacity }
   const userHasBooking =
     isAuthenticated &&
-    (bookingState === 'already_confirmed' || bookingState === 'already_waitlisted')
+    (booking.state === 'already_confirmed' || booking.state === 'already_waitlisted')
   return (
-    <AppShell title={session.title} isAuthenticated={isAuthenticated}>
+    <AppShell header="detail" title={session.title} backHref="/sessions" isAuthenticated={isAuthenticated}>
       <div className="space-y-6">
-        <Button variant="ghost" size="sm" className="-ml-2 px-2" render={<Link href="/sessions" />}>
-          ← Back to sessions
-        </Button>
-
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">{session.space?.name}</p>
           <p className="text-sm">{formatSessionTimeRange(session)}</p>
@@ -90,7 +86,8 @@ export default async function SessionDetailPage({
         {isAuthenticated ? (
           <SessionDetailActions
             session={session}
-            bookingState={bookingState}
+            spaceSlug={session.space?.slug}
+            booking={booking}
           />
         ) : (
           <SignInToBook sessionId={sessionId} />

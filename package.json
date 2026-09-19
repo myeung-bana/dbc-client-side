@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@nhost/nhost-js": "^4.8.0",
     "@serwist/next": "^9.0.14",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.6",
     "next": "16.3.5",

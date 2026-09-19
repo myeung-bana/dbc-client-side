@@ -3,6 +3,7 @@
 import { Icon } from '@/components/icon'
 import { Button } from '@/components/ui/button'
 import { useHaptic } from '@/lib/haptics/use-haptic'
+import { APP_NAME } from '@/lib/brand'
 import { usePwaInstall } from '@/lib/pwa/use-pwa-install'
 
 export function PwaInstallBanner() {
@@ -24,7 +25,7 @@ export function PwaInstallBanner() {
   return (
     <div className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b bg-primary px-4 py-2.5 text-primary-foreground">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">Install DBC Booking</p>
+        <p className="text-sm font-medium">Install {APP_NAME}</p>
         <p className="text-xs text-primary-foreground/80">
           {isIos && !canInstall
             ? 'Tap Share, then Add to Home Screen'

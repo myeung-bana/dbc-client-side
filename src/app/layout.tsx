@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { LoginOverlayProvider } from '@/components/login-overlay-provider'
 import { ProfileAvatarProvider } from '@/components/profile-avatar-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { APP_NAME, APP_TAGLINE } from '@/lib/brand'
 import './globals.css'
 
 const geistSans = Geist({
@@ -16,13 +17,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'DBC Player',
-  description: 'Book badminton sessions across your spaces',
-  applicationName: 'DBC Player',
+  title: APP_NAME,
+  description: APP_TAGLINE,
+  applicationName: APP_NAME,
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'DBC Player',
+    title: APP_NAME,
   },
   formatDetection: {
     telephone: false,

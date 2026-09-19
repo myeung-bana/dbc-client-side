@@ -32,12 +32,12 @@ export function InviteAcceptForm({ defaultMembershipId }: { defaultMembershipId?
   return (
     <form className="space-y-3" onSubmit={onSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="membershipId">Invite / membership ID</Label>
+        <Label htmlFor="membershipId">Membership invite ID</Label>
         <Input
           id="membershipId"
           value={membershipId}
           onChange={(event) => setMembershipId(event.target.value)}
-          placeholder="Paste invite code"
+          placeholder="Paste membership invite ID"
           required
         />
       </div>

@@ -5,6 +5,7 @@ import { Icon } from '@/components/icon'
 import { LoginForm } from '@/app/login/login-form'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogPortal } from '@/components/ui/dialog'
+import { APP_NAME } from '@/lib/brand'
 import { useHaptic } from '@/lib/haptics/use-haptic'
 import { cn } from '@/lib/utils'
 
@@ -52,7 +53,7 @@ export function LoginOverlay({
           <div className="flex items-center justify-between border-b px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
             <div>
               <DialogPrimitive.Title className="text-lg font-semibold">
-                Sign in
+                Sign in to {APP_NAME}
               </DialogPrimitive.Title>
               <DialogPrimitive.Description className="text-sm text-muted-foreground">
                 Book sessions and manage your games

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SessionCapacityBar } from '@/components/session-capacity-bar'
+import { SpaceLogo } from '@/components/space-logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,12 +36,22 @@ export function SessionCard({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs text-muted-foreground">{session.space?.name}</p>
-            <CardTitle className="text-base">{session.title}</CardTitle>
+        <div className="flex items-start gap-3">
+          <SpaceLogo
+            name={session.space?.name ?? 'Space'}
+            logoUrl={session.space?.logo_url}
+            size="sm"
+            className="shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-xs text-muted-foreground">{session.space?.name}</p>
+                <CardTitle className="text-base">{session.title}</CardTitle>
+              </div>
+              {spotsLeft === 0 ? <Badge variant="secondary">Waitlist</Badge> : null}
+            </div>
           </div>
-          {spotsLeft === 0 ? <Badge variant="secondary">Waitlist</Badge> : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

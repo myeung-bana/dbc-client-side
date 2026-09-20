@@ -57,7 +57,7 @@ export type Session = {
   ends_at: string
   capacity: number
   status: 'scheduled' | 'cancelled'
-  space?: { id: string; name: string; slug?: string } | null
+  space?: { id: string; name: string; slug?: string; logo_url?: string | null } | null
   court?: { id: string; name: string; location?: { id: string; name: string } | null } | null
   location?: { id: string; name: string } | null
   session_bookings?: SessionBookingSummary[]

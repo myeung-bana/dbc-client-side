@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { GoogleIcon } from '@/components/icons/google-icon'
+import { GachiLogo } from '@/components/gachi-logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -175,6 +176,7 @@ export function LoginForm({
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <GachiLogo surface="light" variant="mark" height={28} className="mb-2" />
           <CardTitle>Sign in to {APP_NAME}</CardTitle>
           <CardDescription>
             Browse sessions as a guest anytime. Sign in when you&apos;re ready to book.

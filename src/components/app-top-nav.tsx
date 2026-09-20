@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { GachiLogo } from '@/components/gachi-logo'
 import { InviteQrScannerSheet } from '@/components/invite-qr-scanner-sheet'
 import { Icon } from '@/components/icon'
 import { useLoginOverlay } from '@/components/login-overlay-provider'
 import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { UserAvatar } from '@/components/user-avatar'
 import { Button } from '@/components/ui/button'
-import { APP_SHORT_NAME } from '@/lib/brand'
 import { triggerHaptic } from '@/lib/haptics/haptics'
 
 type NavUser = {
@@ -65,10 +65,11 @@ export function AppTopNav({
           ) : (
             <Link
               href="/sessions"
-              className="text-lg font-semibold tracking-tight"
+              className="inline-flex items-center"
+              aria-label="Gachi home"
               onClick={() => triggerHaptic('selection')}
             >
-              {APP_SHORT_NAME}
+              <GachiLogo surface="light" height={24} />
             </Link>
           )}
 

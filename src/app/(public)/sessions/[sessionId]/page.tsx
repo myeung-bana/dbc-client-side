@@ -4,6 +4,7 @@ import { AdSlot } from '@/components/ad-slot'
 import { SessionDetailActions } from '@/components/session-detail-actions'
 import { SessionCapacityBar } from '@/components/session-capacity-bar'
 import { SignInToBook } from '@/components/sign-in-to-book'
+import { SpaceLogo } from '@/components/space-logo'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { getBookingState } from '@/lib/data/bookings'
@@ -45,7 +46,15 @@ export default async function SessionDetailPage({
     <AppShell header="detail" title={session.title} backHref="/sessions" isAuthenticated={isAuthenticated}>
       <div className="space-y-6">
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{session.space?.name}</p>
+          <div className="flex items-center gap-3">
+            <SpaceLogo
+              name={session.space?.name ?? 'Space'}
+              logoUrl={session.space?.logo_url}
+              size="md"
+              className="shrink-0"
+            />
+            <p className="font-medium">{session.space?.name}</p>
+          </div>
           <p className="text-sm">{formatSessionTimeRange(session)}</p>
           <p className="text-sm text-muted-foreground">{formatSessionVenue(session)}</p>
           <div className="space-y-2 pt-1">

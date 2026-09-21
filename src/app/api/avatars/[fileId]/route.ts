@@ -10,6 +10,15 @@ type RouteContext = {
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+// Avatars are immutable per file id; callers bust the cache with ?v=<revision>.
+const CACHE_CONTROL = 'private, max-age=3600'
+
+function redirectToFile(url: string) {
+  const response = NextResponse.redirect(url, { status: 307 })
+  response.headers.set('Cache-Control', CACHE_CONTROL)
+  return response
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   const { fileId } = await context.params
 
@@ -22,7 +31,7 @@ export async function GET(_request: Request, context: RouteContext) {
     try {
       const { body } = await admin.storage.getFilePresignedURL(fileId)
       if (body.url) {
-        return NextResponse.redirect(body.url, { status: 307 })
+        return redirectToFile(body.url)
       }
     } catch {
       // Fall through to public fetch / session presigned URL.
@@ -34,7 +43,7 @@ export async function GET(_request: Request, context: RouteContext) {
     try {
       const { body } = await auth.nhost.storage.getFilePresignedURL(fileId)
       if (body.url) {
-        return NextResponse.redirect(body.url, { status: 307 })
+        return redirectToFile(body.url)
       }
     } catch {
       // Fall through to public fetch.
@@ -42,7 +51,7 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const storageUrl = getStorageFileUrl(fileId)
-  const storageResponse = await fetch(storageUrl, { cache: 'no-store' })
+  const storageResponse = await fetch(storageUrl)
 
   if (!storageResponse.ok || !storageResponse.body) {
     return NextResponse.json({ error: 'Avatar not found' }, { status: 404 })
@@ -53,7 +62,7 @@ export async function GET(_request: Request, context: RouteContext) {
     'Content-Type',
     storageResponse.headers.get('content-type') ?? 'application/octet-stream',
   )
-  headers.set('Cache-Control', 'private, max-age=3600')
+  headers.set('Cache-Control', CACHE_CONTROL)
 
   return new NextResponse(storageResponse.body, {
     status: 200,

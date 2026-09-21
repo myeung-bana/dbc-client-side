@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { getBookingState } from '@/lib/data/bookings'
 import { getSessionDetail, getSessionRosterPreview } from '@/lib/data/sessions'
+import { getConfirmedCount } from '@/lib/sessions/capacity'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
 import { getGraphqlRole, getUserRolesFromSession } from '@/lib/nhost/roles'
 import { getOptionalServerSession } from '@/lib/nhost/server'
@@ -35,7 +36,7 @@ export default async function SessionDetailPage({
   ])
 
   const roster = rosterResult?.ok ? rosterResult.data.session_bookings ?? [] : []
-  const confirmedCount = session.session_bookings?.length ?? roster.length
+  const confirmedCount = getConfirmedCount(session) ?? roster.length
   const booking = stateResult.ok
     ? stateResult.data
     : { state: 'closed' as const, confirmedCount, capacity: session.capacity }

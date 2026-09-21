@@ -1,4 +1,13 @@
+import type { Session } from '@/lib/types'
+
 export type CapacityTone = 'available' | 'filling' | 'almost-full' | 'full'
+
+export function getConfirmedCount(session: Session): number | null {
+  const count = session.session_bookings_aggregate?.aggregate?.count
+  if (typeof count === 'number') return count
+
+  return session.session_bookings?.length ?? null
+}
 
 export function getCapacityFillPercent(confirmed: number, capacity: number): number {
   if (capacity <= 0) return 0

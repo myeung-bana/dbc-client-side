@@ -1,6 +1,3 @@
-import { getOptionalServerSession } from '@/lib/nhost/server'
-
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  await getOptionalServerSession()
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return children
 }

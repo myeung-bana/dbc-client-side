@@ -1,15 +1,26 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { GachiLogo } from '@/components/gachi-logo'
-import { InviteQrScannerSheet } from '@/components/invite-qr-scanner-sheet'
+import { useBottomNavLayout } from '@/components/bottom-nav-layout-provider'
 import { Icon } from '@/components/icon'
 import { useLoginOverlay } from '@/components/login-overlay-provider'
 import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { UserAvatar } from '@/components/user-avatar'
 import { Button } from '@/components/ui/button'
 import { triggerHaptic } from '@/lib/haptics/haptics'
+import { useHapticOverlay } from '@/lib/haptics/use-haptic-overlay'
+import { cn } from '@/lib/utils'
+
+const InviteQrScannerSheet = dynamic(
+  () =>
+    import('@/components/invite-qr-scanner-sheet').then((mod) => ({
+      default: mod.InviteQrScannerSheet,
+    })),
+  { ssr: false },
+)
 
 type NavUser = {
   displayName?: string | null
@@ -35,8 +46,12 @@ export function AppTopNav({
 }: AppTopNavProps) {
   const { openLogin } = useLoginOverlay()
   const [scanOpen, setScanOpen] = useState(false)
+  // Stays true after the first open so the sheet keeps its close animation.
+  const [scanLoaded, setScanLoaded] = useState(false)
   const { avatarUrl: liveAvatarUrl, displayName: liveDisplayName, revision } =
     useProfileAvatar()
+  const logoHapticRef = useHapticOverlay<HTMLAnchorElement>(variant !== 'detail')
+  const { isIos, isStandalone } = useBottomNavLayout()
 
   const displayName =
     liveDisplayName ??
@@ -48,7 +63,15 @@ export function AppTopNav({
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header
+        className={cn(
+          'sticky top-0 z-30 border-b pt-[env(safe-area-inset-top)]',
+          // Compositing a blur under a scrolling list janks on iOS.
+          isIos || isStandalone
+            ? 'bg-background'
+            : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80',
+        )}
+      >
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between gap-3 px-4">
           {variant === 'detail' ? (
             <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -64,6 +87,7 @@ export function AppTopNav({
             </div>
           ) : (
             <Link
+              ref={logoHapticRef}
               href="/sessions"
               className="inline-flex items-center"
               aria-label="Gachi home"
@@ -106,7 +130,10 @@ export function AppTopNav({
                 variant="ghost"
                 size="icon"
                 aria-label="Scan invite QR code"
-                onClick={() => setScanOpen(true)}
+                onClick={() => {
+                  setScanLoaded(true)
+                  setScanOpen(true)
+                }}
               >
                 <Icon name="qr" size={22} />
               </Button>
@@ -115,7 +142,7 @@ export function AppTopNav({
         </div>
       </header>
 
-      {showQrScan ? (
+      {showQrScan && scanLoaded ? (
         <InviteQrScannerSheet
           open={scanOpen}
           onOpenChange={setScanOpen}

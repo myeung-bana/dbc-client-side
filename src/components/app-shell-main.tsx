@@ -1,6 +1,6 @@
 'use client'
 
-import { useBottomNavLayout } from '@/hooks/use-bottom-nav-layout'
+import { useBottomNavLayout } from '@/components/bottom-nav-layout-provider'
 
 export function AppShellMain({ children }: { children: React.ReactNode }) {
   const { navHeightPx } = useBottomNavLayout()

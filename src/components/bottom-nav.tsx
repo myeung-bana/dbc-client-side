@@ -4,9 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Icon, type IconName } from '@/components/icon'
 import { useLoginOverlay } from '@/components/login-overlay-provider'
-import { useBottomNavLayout } from '@/hooks/use-bottom-nav-layout'
+import { useBottomNavLayout } from '@/components/bottom-nav-layout-provider'
 import { triggerHaptic } from '@/lib/haptics/haptics'
+import { useHapticOverlay } from '@/lib/haptics/use-haptic-overlay'
 import { cn } from '@/lib/utils'
+
+const navItemClass =
+  'flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors'
 
 type NavItem = {
   href?: string
@@ -28,6 +32,71 @@ const authItems: NavItem[] = [
   { href: '/passes', label: 'Passes', icon: 'check-circle', requiresAuth: true },
 ]
 
+function NavLoginButton({
+  label,
+  icon,
+  active,
+  onSelect,
+}: {
+  label: string
+  icon: IconName
+  active: boolean
+  onSelect: () => void
+}) {
+  const hapticRef = useHapticOverlay<HTMLButtonElement>()
+
+  return (
+    <button
+      ref={hapticRef}
+      type="button"
+      aria-label="Sign in"
+      onClick={onSelect}
+      className={cn(navItemClass, active ? 'text-primary' : 'text-muted-foreground')}
+    >
+      <Icon
+        name={icon}
+        size={22}
+        strokeWidth={active ? 2.25 : 2}
+        className={active ? 'text-primary' : undefined}
+      />
+      <span>{label}</span>
+    </button>
+  )
+}
+
+function NavLink({
+  href,
+  label,
+  icon,
+  active,
+  onSelect,
+}: {
+  href: string
+  label: string
+  icon: IconName
+  active: boolean
+  onSelect: (event: React.MouseEvent<HTMLAnchorElement>) => void
+}) {
+  const hapticRef = useHapticOverlay<HTMLAnchorElement>()
+
+  return (
+    <Link
+      ref={hapticRef}
+      href={href}
+      onClick={onSelect}
+      className={cn(navItemClass, active ? 'text-primary' : 'text-muted-foreground')}
+    >
+      <Icon
+        name={icon}
+        size={20}
+        strokeWidth={active ? 2.25 : 2}
+        className={active ? 'text-primary' : undefined}
+      />
+      <span>{label}</span>
+    </Link>
+  )
+}
+
 type BottomNavProps = {
   isAuthenticated: boolean
 }
@@ -40,7 +109,13 @@ export function BottomNav({ isAuthenticated }: BottomNavProps) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className={cn(
+        'fixed inset-x-0 bottom-0 z-40 border-t',
+        // Compositing a blur under a scrolling list janks on iOS.
+        isIos || isStandalone
+          ? 'bg-background'
+          : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80',
+      )}
       style={{ paddingBottom: paddingBottomPx }}
       data-standalone={isStandalone ? 'true' : 'false'}
       data-ios={isIos ? 'true' : 'false'}
@@ -57,56 +132,36 @@ export function BottomNav({ isAuthenticated }: BottomNavProps) {
 
           if (isLoginAction) {
             return (
-              <button
+              <NavLoginButton
                 key={label}
-                type="button"
-                aria-label="Sign in"
-                onClick={() => {
+                label={label}
+                icon={icon}
+                active={active}
+                onSelect={() => {
                   triggerHaptic('selection')
                   openLogin({ next: '/sessions' })
                 }}
-                className={cn(
-                  'flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors',
-                  active ? 'text-primary' : 'text-muted-foreground',
-                )}
-              >
-                <Icon
-                  name={icon}
-                  size={22}
-                  strokeWidth={active ? 2.25 : 2}
-                  className={active ? 'text-primary' : undefined}
-                />
-                <span>{label}</span>
-              </button>
+              />
             )
           }
 
           const loginNext = requiresAuth && !isAuthenticated ? href : undefined
 
           return (
-            <Link
+            <NavLink
               key={href}
               href={href!}
-              onClick={(event) => {
+              label={label}
+              icon={icon}
+              active={active}
+              onSelect={(event) => {
                 triggerHaptic('selection')
                 if (loginNext) {
                   event.preventDefault()
                   openLogin({ next: loginNext })
                 }
               }}
-              className={cn(
-                'flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors',
-                active ? 'text-primary' : 'text-muted-foreground',
-              )}
-            >
-              <Icon
-                name={icon}
-                size={20}
-                strokeWidth={active ? 2.25 : 2}
-                className={active ? 'text-primary' : undefined}
-              />
-              <span>{label}</span>
-            </Link>
+            />
           )
         })}
       </div>

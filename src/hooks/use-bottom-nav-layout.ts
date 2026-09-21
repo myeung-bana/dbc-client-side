@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 export const BOTTOM_NAV_EXTRA_PADDING_PX = 20
 
-type BottomNavLayout = {
+export type BottomNavLayout = {
   paddingBottomPx: number
   navHeightPx: number
   isStandalone: boolean
@@ -12,6 +12,13 @@ type BottomNavLayout = {
 }
 
 const NAV_ROW_HEIGHT_PX = 56
+
+export const DEFAULT_BOTTOM_NAV_LAYOUT: BottomNavLayout = {
+  paddingBottomPx: BOTTOM_NAV_EXTRA_PADDING_PX,
+  navHeightPx: NAV_ROW_HEIGHT_PX + BOTTOM_NAV_EXTRA_PADDING_PX + 20,
+  isStandalone: false,
+  isIos: false,
+}
 
 function readSafeAreaBottomPx() {
   if (typeof window === 'undefined') return 0
@@ -26,13 +33,12 @@ function readSafeAreaBottomPx() {
   return value
 }
 
-export function useBottomNavLayout(): BottomNavLayout {
-  const [layout, setLayout] = useState<BottomNavLayout>({
-    paddingBottomPx: BOTTOM_NAV_EXTRA_PADDING_PX,
-    navHeightPx: NAV_ROW_HEIGHT_PX + BOTTOM_NAV_EXTRA_PADDING_PX + 20,
-    isStandalone: false,
-    isIos: false,
-  })
+/**
+ * Measures the safe area once per app shell. Consume the result through
+ * `useBottomNavLayout` so the DOM probe and listeners are not duplicated.
+ */
+export function useBottomNavLayoutValue(): BottomNavLayout {
+  const [layout, setLayout] = useState<BottomNavLayout>(DEFAULT_BOTTOM_NAV_LAYOUT)
 
   useEffect(() => {
     function update() {
@@ -45,12 +51,14 @@ export function useBottomNavLayout(): BottomNavLayout {
       const paddingBottomPx = safeAreaBottom + BOTTOM_NAV_EXTRA_PADDING_PX
       const navHeightPx = NAV_ROW_HEIGHT_PX + 20 + paddingBottomPx
 
-      setLayout({
-        paddingBottomPx,
-        navHeightPx,
-        isStandalone,
-        isIos,
-      })
+      setLayout((current) =>
+        current.paddingBottomPx === paddingBottomPx &&
+        current.navHeightPx === navHeightPx &&
+        current.isStandalone === isStandalone &&
+        current.isIos === isIos
+          ? current
+          : { paddingBottomPx, navHeightPx, isStandalone, isIos },
+      )
     }
 
     update()

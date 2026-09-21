@@ -4,6 +4,7 @@ import { SpaceLogo } from '@/components/space-logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getConfirmedCount } from '@/lib/sessions/capacity'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
 import {
   getBookingCtaLabel,
@@ -22,7 +23,7 @@ export function SessionCard({
   bookingState,
   isAuthenticated = false,
 }: SessionCardProps) {
-  const confirmedCount = session.session_bookings?.length ?? 0
+  const confirmedCount = getConfirmedCount(session) ?? 0
   const spotsLeft = Math.max(session.capacity - confirmedCount, 0)
   const ctaLabel = !isAuthenticated
     ? 'View details'

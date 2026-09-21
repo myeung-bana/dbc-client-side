@@ -15,7 +15,7 @@ export function ProfilePreferencesSection() {
       <ProfileSettingsRow
         label="Haptic feedback"
         value={enabled ? 'On' : 'Off'}
-        hint="Vibration on taps and completed actions (Android and installed app)"
+        hint="Feedback on taps. On iPhone, confirmation of completed actions is visual only."
         showChevron
         onClick={() => {
           const nextEnabled = !enabled

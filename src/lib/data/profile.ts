@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { cache } from 'react'
 import { clientGqlRequest } from '@/lib/graphql'
 import { getPublicNhostConfig } from '@/lib/nhost/config'
 import { getHasuraUserId, getAuthUrl } from '@/lib/nhost/session-cookie'
@@ -53,7 +54,21 @@ async function fetchAuthUserFromApi(
   }
 }
 
-export async function getProfile() {
+function fetchUserProfile(userId: string) {
+  return clientGqlRequest<{ user_profiles: UserProfile[] }>(
+    `
+      query UserProfile($userId: uuid!) {
+        user_profiles(where: { user_id: { _eq: $userId } }, limit: 1) {
+          user_id
+          onboarding_completed_at
+        }
+      }
+    `,
+    { userId },
+  )
+}
+
+export const getProfile = cache(async () => {
   const auth = await requireServerSession()
   if (!auth.ok) {
     return {
@@ -72,17 +87,7 @@ export async function getProfile() {
       return { ok: false as const, error: 'User not found' }
     }
 
-    const profile = await clientGqlRequest<{ user_profiles: UserProfile[] }>(
-      `
-        query UserProfile($userId: uuid!) {
-          user_profiles(where: { user_id: { _eq: $userId } }, limit: 1) {
-            user_id
-            onboarding_completed_at
-          }
-        }
-      `,
-      { userId: fallbackUser.id },
-    )
+    const profile = await fetchUserProfile(fallbackUser.id)
 
     return {
       ok: true as const,
@@ -93,60 +98,57 @@ export async function getProfile() {
     }
   }
 
-  const authUser = await clientGqlRequest<{ user: AuthUserRecord | null }>(
+  const result = await clientGqlRequest<{
+    user: AuthUserRecord | null
+    user_profiles: UserProfile[]
+  }>(
     `
-      query CurrentUser($userId: uuid!) {
+      query CurrentUserWithProfile($userId: uuid!) {
         user(id: $userId) {
           id
           email
           displayName
           avatarUrl
         }
-      }
-    `,
-    { userId },
-  )
-
-  let user: AuthUserRecord | null = null
-
-  if (authUser.ok) {
-    user = authUser.data.user
-  }
-
-  if (!user) {
-    user = await fetchAuthUserFromApi(auth.session)
-  }
-
-  if (!user) {
-    return authUser.ok
-      ? { ok: false as const, error: 'User not found' }
-      : authUser
-  }
-
-  const profile = await clientGqlRequest<{ user_profiles: UserProfile[] }>(
-    `
-      query UserProfile($userId: uuid!) {
         user_profiles(where: { user_id: { _eq: $userId } }, limit: 1) {
           user_id
           onboarding_completed_at
         }
       }
     `,
-    { userId: user.id },
+    { userId },
   )
 
-  if (!profile.ok) {
-    return profile
+  if (!result.ok) {
+    const fallbackUser = await fetchAuthUserFromApi(auth.session)
+    if (!fallbackUser) {
+      return result
+    }
+
+    const profile = await fetchUserProfile(fallbackUser.id)
+
+    return {
+      ok: true as const,
+      data: {
+        user: fallbackUser,
+        profile: profile.ok ? profile.data.user_profiles[0] ?? null : null,
+      },
+    }
+  }
+
+  const user = result.data.user ?? (await fetchAuthUserFromApi(auth.session))
+  if (!user) {
+    return { ok: false as const, error: 'User not found' }
   }
 
   return {
     ok: true as const,
     data: {
       user,
-      profile: profile.data.user_profiles[0] ?? null,
+      profile: result.data.user_profiles[0] ?? null,
     },
   }
-}
+})
 
 export async function completeOnboarding() {
   const auth = await requireServerSession()

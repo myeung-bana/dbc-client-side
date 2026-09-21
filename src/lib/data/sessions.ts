@@ -14,8 +14,10 @@ const SESSION_FIELDS = `
   space { id name slug logo_url }
   court { id name location { id name } }
   location { id name }
-  session_bookings(where: { status: { _eq: confirmed } }) {
-    id
+  session_bookings_aggregate(where: { status: { _eq: confirmed } }) {
+    aggregate {
+      count
+    }
   }
 `
 

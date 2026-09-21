@@ -3,15 +3,16 @@ import { AppShell } from '@/components/app-shell'
 import { AdSlot } from '@/components/ad-slot'
 import { SessionDetailActions } from '@/components/session-detail-actions'
 import { SessionCapacityBar } from '@/components/session-capacity-bar'
+import { SessionRosterList } from '@/components/session-roster-list'
 import { SignInToBook } from '@/components/sign-in-to-book'
 import { SpaceLogo } from '@/components/space-logo'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { getBookingState } from '@/lib/data/bookings'
 import { getSessionDetail, getSessionRosterPreview } from '@/lib/data/sessions'
 import { getConfirmedCount } from '@/lib/sessions/capacity'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
 import { getGraphqlRole, getUserRolesFromSession } from '@/lib/nhost/roles'
+import { getHasuraUserId } from '@/lib/nhost/session-cookie'
 import { getOptionalServerSession } from '@/lib/nhost/server'
 export default async function SessionDetailPage({
   params,
@@ -43,6 +44,7 @@ export default async function SessionDetailPage({
   const userHasBooking =
     isAuthenticated &&
     (booking.state === 'already_confirmed' || booking.state === 'already_waitlisted')
+  const currentUserId = auth.ok ? getHasuraUserId(auth.session) : null
   return (
     <AppShell header="detail" title={session.title} backHref="/sessions" isAuthenticated={isAuthenticated}>
       <div className="space-y-6">
@@ -69,22 +71,7 @@ export default async function SessionDetailPage({
         <section className="space-y-3">
           <h2 className="font-medium">Roster</h2>
           {userHasBooking ? (
-            <div className="flex flex-wrap gap-2">
-              {roster.map((entry) => {
-                const name = entry?.user?.displayName ?? 'Player'
-                return (
-                  <div
-                    key={entry?.id}
-                    className="flex items-center gap-2 rounded-full border px-2 py-1 text-sm"
-                  >
-                    <Avatar className="size-6">
-                      <AvatarFallback>{name.slice(0, 1).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span>{name}</span>
-                  </div>
-                )
-              })}
-            </div>
+            <SessionRosterList roster={roster} currentUserId={currentUserId} />
           ) : (
             <p className="text-sm text-muted-foreground">
               {confirmedCount} going

@@ -99,5 +99,7 @@ function clearSessionCookie(response: NextResponse) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest).*)'],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|brand/|splash/).*)',
+  ],
 }

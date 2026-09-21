@@ -31,6 +31,10 @@ export function isBookingActionEnabled(state: BookingState) {
   return state === 'open_window' || state === 'priority_window' || state === 'waitlist_open'
 }
 
+export function canCancelBooking(state: BookingState) {
+  return state === 'already_confirmed' || state === 'already_waitlisted'
+}
+
 export function getBookingJoinHref(
   state: BookingState,
   spaceSlug?: string | null,

@@ -1,27 +1,6 @@
 import type { MetadataRoute } from 'next'
-import { APP_NAME, APP_SHORT_NAME, APP_TAGLINE } from '@/lib/brand'
+import { createClientAppManifest } from '@/lib/pwa-metadata'
 
 export default function manifest(): MetadataRoute.Manifest {
-  return {
-    name: APP_NAME,
-    short_name: APP_SHORT_NAME,
-    description: APP_TAGLINE,
-    start_url: '/sessions',
-    display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#171717',
-    orientation: 'portrait',
-    icons: [
-      {
-        src: '/icon-192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-    ],
-  }
+  return createClientAppManifest()
 }

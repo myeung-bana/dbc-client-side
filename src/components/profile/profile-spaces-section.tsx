@@ -40,6 +40,7 @@ type Follow = {
 type PassBalance = {
   spaceId: string
   balance: number
+  label?: string
 }
 
 export function ProfileSpacesSection({
@@ -53,7 +54,7 @@ export function ProfileSpacesSection({
 }) {
   const membershipSpaceIds = new Set(memberships.map((membership) => membership.space_id))
   const followedOnly = follows.filter((follow) => !membershipSpaceIds.has(follow.space_id))
-  const balanceBySpace = new Map(passBalances.map((row) => [row.spaceId, row.balance]))
+  const balanceBySpace = new Map(passBalances.map((row) => [row.spaceId, row]))
 
   return (
     <ProfileSettingsGroup title="My spaces">
@@ -87,7 +88,8 @@ export function ProfileSpacesSection({
                   </Badge>
                   {membership.role === 'casual' && membership.status === 'active' ? (
                     <Badge variant="outline" className="shrink-0">
-                      {balanceBySpace.get(membership.space_id) ?? 0} credits
+                      {balanceBySpace.get(membership.space_id)?.label ??
+                        `${balanceBySpace.get(membership.space_id)?.balance ?? 0} credits`}
                     </Badge>
                   ) : null}
                   {membership.status === 'pending' ? (

@@ -32,6 +32,7 @@ type AppTopNavProps = {
   title?: string
   backHref?: string
   showScan?: boolean
+  canScanCheckin?: boolean
   isAuthenticated: boolean
   navUser?: NavUser | null
 }
@@ -41,6 +42,7 @@ export function AppTopNav({
   title,
   backHref = '/sessions',
   showScan = true,
+  canScanCheckin = false,
   isAuthenticated,
   navUser,
 }: AppTopNavProps) {
@@ -124,6 +126,17 @@ export function AppTopNav({
                 <Icon name="user" size={22} />
               </Button>
             )}
+
+            {canScanCheckin ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Scan to check in"
+                render={<Link href="/scan-checkin" />}
+              >
+                <Icon name="camera" size={22} />
+              </Button>
+            ) : null}
 
             {showQrScan ? (
               <Button

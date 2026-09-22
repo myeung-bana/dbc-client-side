@@ -17,6 +17,8 @@ export function getBookingCtaLabel(state: BookingState) {
       return 'Join space to book'
     case 'no_credits':
       return 'No credits available'
+    case 'pass_expired':
+      return 'Your season pass has expired'
     case 'full':
       return 'Full'
     case 'locked_priority':
@@ -57,6 +59,8 @@ export function getBookingHint(
   switch (state) {
     case 'no_credits':
       return 'Ask your organiser for pass credits'
+    case 'pass_expired':
+      return 'Your season pass has expired'
     case 'follow_only':
       return 'Join as Casual to book sessions in this space'
     case 'no_membership':

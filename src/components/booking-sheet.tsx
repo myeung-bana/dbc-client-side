@@ -21,9 +21,10 @@ type BookingSheetProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   ctaLabel: string
+  note?: string | null
 }
 
-export function BookingSheet({ session, open, onOpenChange, ctaLabel }: BookingSheetProps) {
+export function BookingSheet({ session, open, onOpenChange, ctaLabel, note }: BookingSheetProps) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -57,6 +58,7 @@ export function BookingSheet({ session, open, onOpenChange, ctaLabel }: BookingS
           <p>{formatSessionTimeRange(session)}</p>
           <p className="text-muted-foreground">{formatSessionVenue(session)}</p>
           <p className="text-muted-foreground">{session.space?.name}</p>
+          {note ? <p className="text-muted-foreground">{note}</p> : null}
         </div>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <SheetFooter className="gap-2 sm:gap-0">

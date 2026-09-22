@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CheckinQrDisplay } from '@/components/checkin/checkin-qr-display'
 import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
 import type { MyBooking } from '@/lib/types'
 
@@ -50,6 +51,7 @@ function BookingCard({ booking }: { booking: MyBooking }) {
           <p>{formatSessionVenue(booking.session)}</p>
           {isWaitlisted ? <p>You&apos;re on the waitlist</p> : null}
         </div>
+        {!isWaitlisted ? <CheckinQrDisplay bookingId={booking.id} sessionId={booking.session.id} /> : null}
         <div className="flex gap-2">
           <Button
             variant="outline"

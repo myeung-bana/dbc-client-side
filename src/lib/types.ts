@@ -100,6 +100,31 @@ export type BookingState =
   | 'no_membership'
   | 'follow_only'
   | 'no_credits'
+  | 'pass_expired'
+
+export type PassStatus = 'active' | 'expiring_soon' | 'exhausted' | 'expired' | 'upcoming'
+
+export type PassRedemptionMode = 'qr_checkin' | 'auto_consume' | 'both'
+
+export type UserSeasonPass = {
+  id: string
+  spaceId: string
+  seasonPassId: string
+  name: string
+  creditsRemaining: number
+  creditsTotal: number
+  startDate: string
+  endDate: string
+  status: PassStatus
+  isLegacy: boolean
+  createdAt: string
+  space?: {
+    id: string
+    name: string
+    slug: string
+    redemptionMode: PassRedemptionMode
+  } | null
+}
 
 export type BookingStateResponse = {
   state: BookingState
@@ -108,6 +133,8 @@ export type BookingStateResponse = {
   capacity: number
   membershipRole?: 'member' | 'casual' | 'organiser' | null
   passBalance?: number | null
+  passGate?: 'ok' | 'no_credits' | 'pass_expired' | null
+  redemptionMode?: PassRedemptionMode | null
   canBookReason?: string | null
   isGuest?: boolean
 }

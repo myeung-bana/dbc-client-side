@@ -2,6 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { bookSession, cancelBooking } from '@/lib/data/bookings'
+import {
+  getCheckinContext,
+  getCheckinToken,
+  getPlayerCheckinToken,
+  searchCheckinPlayers,
+  submitCheckinScan,
+  submitManualCheckin,
+} from '@/lib/data/passes'
 import { acceptInvite, followSpace, joinBySlug, redeemInvite, resolveInvite, resolveSlugJoin, unfollowSpace } from '@/lib/data/memberships'
 import { completeOnboarding } from '@/lib/data/profile'
 
@@ -92,6 +100,39 @@ export async function unfollowSpaceAction(spaceId: string) {
     revalidatePath('/profile')
     revalidatePath('/sessions')
     revalidatePath('/spaces')
+  }
+  return result
+}
+
+export async function getCheckinTokenAction(input: { bookingId?: string; sessionId?: string }) {
+  return getCheckinToken(input)
+}
+
+export async function getPlayerCheckinTokenAction(spaceId: string) {
+  return getPlayerCheckinToken(spaceId)
+}
+
+export async function getCheckinContextAction() {
+  return getCheckinContext()
+}
+
+export async function searchCheckinPlayersAction(spaceId: string, query: string) {
+  return searchCheckinPlayers(spaceId, query)
+}
+
+export async function submitCheckinScanAction(token: string, sessionId?: string) {
+  const result = await submitCheckinScan(token, sessionId)
+  if (result.ok) {
+    revalidatePath('/my-games')
+    revalidatePath('/passes')
+  }
+  return result
+}
+
+export async function submitManualCheckinAction(sessionId: string, userId: string) {
+  const result = await submitManualCheckin(sessionId, userId)
+  if (result.ok) {
+    revalidatePath('/passes')
   }
   return result
 }

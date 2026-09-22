@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { cancelBookingAction } from '@/app/actions/client'
 import { BookingSheet } from '@/components/booking-sheet'
+import { CheckinQrDisplay } from '@/components/checkin/checkin-qr-display'
 import { Button } from '@/components/ui/button'
 import {
   canCancelBooking,
@@ -77,6 +78,9 @@ export function SessionDetailActions({
       >
         {ctaLabel}
       </Button>
+      {state === 'already_confirmed' && booking.membershipRole === 'casual' ? (
+        <CheckinQrDisplay sessionId={session.id} />
+      ) : null}
       {showCancel ? (
         <Button
           className="w-full"
@@ -93,6 +97,11 @@ export function SessionDetailActions({
         open={open}
         onOpenChange={setOpen}
         ctaLabel={ctaLabel}
+        note={
+          booking.membershipRole === 'casual'
+            ? 'Booking reserves your spot. A credit is deducted when you check in.'
+            : null
+        }
       />
     </div>
   )

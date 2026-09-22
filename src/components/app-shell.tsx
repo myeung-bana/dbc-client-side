@@ -1,3 +1,5 @@
+import { getUserRolesFromSession } from '@/lib/nhost/roles'
+import { getOptionalServerSession } from '@/lib/nhost/server'
 import { BottomNav } from '@/components/bottom-nav'
 import { AppTopNav } from '@/components/app-top-nav'
 import { AppShellMain } from '@/components/app-shell-main'
@@ -19,7 +21,7 @@ type AppShellProps = {
   children: React.ReactNode
 }
 
-export function AppShell({
+export async function AppShell({
   header = 'brand',
   title,
   backHref,
@@ -28,6 +30,10 @@ export function AppShell({
   navUser,
   children,
 }: AppShellProps) {
+  const session = isAuthenticated ? await getOptionalServerSession() : null
+  const roles = session?.ok ? getUserRolesFromSession(session.session) : []
+  const canScanCheckin = roles.includes('organiser') || roles.includes('super_admin')
+
   return (
     <BottomNavLayoutProvider>
       <div className="mx-auto flex min-h-dvh max-w-lg flex-col bg-background">
@@ -38,6 +44,7 @@ export function AppShell({
             title={title}
             backHref={backHref}
             showScan={showScan}
+            canScanCheckin={canScanCheckin}
             isAuthenticated={isAuthenticated}
             navUser={navUser}
           />

@@ -1,105 +1,96 @@
-import Link from 'next/link'
+import { Suspense } from 'react'
 import { AppShell } from '@/components/app-shell'
-import { PlayerQrCard } from '@/components/checkin/player-qr-card'
+import { OpenScanFromQuery } from '@/components/passes/open-scan-from-query'
+import { OrganiserTools } from '@/components/passes/organiser-tools'
+import { PassBalanceCard } from '@/components/passes/pass-balance-card'
+import { PassesEmptyState } from '@/components/passes/passes-empty-state'
 import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { SpaceLogo } from '@/components/space-logo'
+import { listMyMemberships } from '@/lib/data/memberships'
 import { listSeasonPasses } from '@/lib/data/passes'
 import { getProfile } from '@/lib/data/profile'
-import type { PassStatus } from '@/lib/types'
+import type { PassRedemptionMode, UserSeasonPass } from '@/lib/types'
 
-function statusLabel(status: PassStatus) {
-  if (status === 'expiring_soon') return 'Expiring soon'
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+const ACTIVE_STATUSES = new Set<UserSeasonPass['status']>(['active', 'expiring_soon', 'upcoming'])
 
-function formatDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+function showsWalkInQr(mode: PassRedemptionMode | undefined) {
+  return mode !== 'auto_consume'
 }
 
 export default async function PassesPage() {
-  const [profileResult, passesResult] = await Promise.all([
+  const [profileResult, passesResult, membershipsResult] = await Promise.all([
     getProfile(),
     listSeasonPasses(),
+    listMyMemberships(),
   ])
 
   const user = profileResult.ok ? profileResult.data.user : null
   const passes = passesResult.ok ? passesResult.data.passes : []
-  const displayName =
-    user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
+  const memberships = membershipsResult.ok
+    ? membershipsResult.data.space_memberships.filter((membership) => membership.status === 'active')
+    : []
+  const displayName = user?.displayName?.trim() || user?.email?.split('@')[0] || 'Player'
 
-  const bySpace = new Map<string, typeof passes>()
-  for (const pass of passes) {
-    const group = bySpace.get(pass.spaceId) ?? []
-    group.push(pass)
-    bySpace.set(pass.spaceId, group)
-  }
+  const roleBySpace = new Map(memberships.map((membership) => [membership.space_id, membership.role]))
+  const organiserSpaces = memberships
+    .filter((membership) => membership.role === 'organiser' && membership.space?.slug)
+    .map((membership) => ({
+      id: membership.space_id,
+      name: membership.space?.name ?? 'Space',
+      slug: membership.space?.slug ?? '',
+    }))
+
+  const activePasses = passes.filter((pass) => ACTIVE_STATUSES.has(pass.status))
+  const pastPasses = passes.filter((pass) => !ACTIVE_STATUSES.has(pass.status))
+  const hasCasual = memberships.some((membership) => membership.role === 'casual')
+  const hasMember = memberships.some(
+    (membership) => membership.role === 'member' || membership.role === 'organiser',
+  )
+  const emptyVariant = hasCasual || !hasMember ? (memberships.length === 0 ? 'join' : 'casual') : 'member'
+
+  const walkInSpaceIds = new Set<string>()
 
   return (
-    <AppShell
-      isAuthenticated
-      navUser={{ displayName, avatarUrl: user?.avatarUrl }}
-    >
+    <AppShell isAuthenticated navUser={{ displayName, avatarUrl: user?.avatarUrl }}>
       <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
+      <Suspense fallback={null}>
+        <OpenScanFromQuery />
+      </Suspense>
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Season passes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        {organiserSpaces.length > 0 ? <OrganiserTools spaces={organiserSpaces} /> : null}
+
+        <section className="space-y-3">
+          <div className="space-y-1">
+            <h1 className="text-lg font-semibold">Passes</h1>
             <p className="text-sm text-muted-foreground">
-              Credits are assigned by your organiser. Booking reserves a spot; a credit is used when you check in.
+              Booking reserves a spot. A credit is used when you check in, or automatically if you do not cancel.
             </p>
-            {passes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No pass credits yet. Join a space as Casual and ask your organiser to assign credits.
-              </p>
-            ) : (
-              Array.from(bySpace.entries()).map(([spaceId, spacePasses]) => {
-                const space = spacePasses[0]?.space
-                return (
-                  <div key={spaceId} className="space-y-3 rounded-lg border p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <SpaceLogo name={space?.name ?? 'Space'} logoUrl={null} size="sm" />
-                        <p className="font-medium">{space?.name ?? 'Space'}</p>
-                      </div>
-                      {space?.slug ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          render={<Link href={`/sessions?space=${space.slug}`} />}
-                        >
-                          View sessions
-                        </Button>
-                      ) : null}
-                    </div>
-                    {spacePasses.map((pass) => (
-                      <div key={pass.id} className="space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium">{pass.name}</p>
-                          <Badge variant={pass.status === 'expired' ? 'outline' : 'secondary'}>
-                            {statusLabel(pass.status)}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {pass.creditsRemaining} / {pass.creditsTotal} credits · {formatDate(pass.startDate)} – {formatDate(pass.endDate)}
-                        </p>
-                      </div>
-                    ))}
-                    <PlayerQrCard spaceId={spaceId} />
-                  </div>
-                )
-              })
-            )}
-          </CardContent>
-        </Card>
+          </div>
+          {passesResult.ok ? null : (
+            <p className="text-sm text-destructive">{passesResult.error}</p>
+          )}
+          {activePasses.length === 0 ? (
+            <PassesEmptyState variant={emptyVariant} />
+          ) : (
+            activePasses.map((pass) => {
+              const eligible =
+                roleBySpace.get(pass.spaceId) === 'casual' && showsWalkInQr(pass.space?.redemptionMode)
+              const showWalkInQr = eligible && !walkInSpaceIds.has(pass.spaceId)
+              if (showWalkInQr) walkInSpaceIds.add(pass.spaceId)
+              return (
+                <PassBalanceCard key={pass.id} pass={pass} showWalkInQr={showWalkInQr} />
+              )
+            })
+          )}
+        </section>
+
+        {pastPasses.length > 0 ? (
+          <section className="space-y-3">
+            <h2 className="text-sm font-medium text-muted-foreground">Past passes</h2>
+            {pastPasses.map((pass) => (
+              <PassBalanceCard key={pass.id} pass={pass} />
+            ))}
+          </section>
+        ) : null}
       </div>
     </AppShell>
   )

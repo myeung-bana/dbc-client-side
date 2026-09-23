@@ -1,26 +1,17 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { GachiLogo } from '@/components/gachi-logo'
 import { useBottomNavLayout } from '@/components/bottom-nav-layout-provider'
 import { Icon } from '@/components/icon'
 import { useLoginOverlay } from '@/components/login-overlay-provider'
+import { useScanSheet } from '@/components/scan-sheet-provider'
 import { useProfileAvatar } from '@/components/profile-avatar-provider'
 import { UserAvatar } from '@/components/user-avatar'
 import { Button } from '@/components/ui/button'
 import { triggerHaptic } from '@/lib/haptics/haptics'
 import { useHapticOverlay } from '@/lib/haptics/use-haptic-overlay'
 import { cn } from '@/lib/utils'
-
-const InviteQrScannerSheet = dynamic(
-  () =>
-    import('@/components/invite-qr-scanner-sheet').then((mod) => ({
-      default: mod.InviteQrScannerSheet,
-    })),
-  { ssr: false },
-)
 
 type NavUser = {
   displayName?: string | null
@@ -32,7 +23,6 @@ type AppTopNavProps = {
   title?: string
   backHref?: string
   showScan?: boolean
-  canScanCheckin?: boolean
   isAuthenticated: boolean
   navUser?: NavUser | null
 }
@@ -42,14 +32,11 @@ export function AppTopNav({
   title,
   backHref = '/sessions',
   showScan = true,
-  canScanCheckin = false,
   isAuthenticated,
   navUser,
 }: AppTopNavProps) {
   const { openLogin } = useLoginOverlay()
-  const [scanOpen, setScanOpen] = useState(false)
-  // Stays true after the first open so the sheet keeps its close animation.
-  const [scanLoaded, setScanLoaded] = useState(false)
+  const { openScan } = useScanSheet()
   const { avatarUrl: liveAvatarUrl, displayName: liveDisplayName, revision } =
     useProfileAvatar()
   const logoHapticRef = useHapticOverlay<HTMLAnchorElement>(variant !== 'detail')
@@ -127,25 +114,14 @@ export function AppTopNav({
               </Button>
             )}
 
-            {canScanCheckin ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Scan to check in"
-                render={<Link href="/scan-checkin" />}
-              >
-                <Icon name="camera" size={22} />
-              </Button>
-            ) : null}
-
             {showQrScan ? (
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Scan invite QR code"
+                aria-label="Scan a QR code"
                 onClick={() => {
-                  setScanLoaded(true)
-                  setScanOpen(true)
+                  triggerHaptic('selection')
+                  openScan()
                 }}
               >
                 <Icon name="qr" size={22} />
@@ -154,14 +130,6 @@ export function AppTopNav({
           </div>
         </div>
       </header>
-
-      {showQrScan && scanLoaded ? (
-        <InviteQrScannerSheet
-          open={scanOpen}
-          onOpenChange={setScanOpen}
-          isAuthenticated={isAuthenticated}
-        />
-      ) : null}
     </>
   )
 }

@@ -25,7 +25,7 @@ type PlayerOption = {
   displayName: string
 }
 
-export function CheckinScanner() {
+export function CheckinScanner({ showScanner = true }: { showScanner?: boolean }) {
   const [sessions, setSessions] = useState<SessionOption[]>([])
   const [sessionId, setSessionId] = useState('')
   const [scanning, setScanning] = useState(true)
@@ -114,12 +114,14 @@ export function CheckinScanner() {
         </select>
       </div>
 
-      <InviteQrScannerView
-        scanning={scanning && !pending}
-        onScan={onScan}
-        onScanError={() => toastError('Could not read that QR code')}
-        onResume={() => setScanning(true)}
-      />
+      {showScanner ? (
+        <InviteQrScannerView
+          scanning={scanning && !pending}
+          onScan={onScan}
+          onScanError={() => toastError('Could not read that QR code')}
+          onResume={() => setScanning(true)}
+        />
+      ) : null}
 
       <form onSubmit={searchPlayers} className="space-y-2">
         <Label htmlFor="player-search">Walk-in without a QR</Label>

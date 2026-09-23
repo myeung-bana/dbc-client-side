@@ -5,6 +5,7 @@ import { AppTopNav } from '@/components/app-top-nav'
 import { AppShellMain } from '@/components/app-shell-main'
 import { BottomNavLayoutProvider } from '@/components/bottom-nav-layout-provider'
 import { PwaInstallBanner } from '@/components/pwa-install-banner'
+import { ScanSheetProvider } from '@/components/scan-sheet-provider'
 
 type NavUser = {
   displayName?: string | null
@@ -38,18 +39,19 @@ export async function AppShell({
     <BottomNavLayoutProvider>
       <div className="mx-auto flex min-h-dvh max-w-lg flex-col bg-background">
         <PwaInstallBanner />
-        {header !== 'none' ? (
-          <AppTopNav
-            variant={header}
-            title={title}
-            backHref={backHref}
-            showScan={showScan}
-            canScanCheckin={canScanCheckin}
-            isAuthenticated={isAuthenticated}
-            navUser={navUser}
-          />
-        ) : null}
-        <AppShellMain>{children}</AppShellMain>
+        <ScanSheetProvider isAuthenticated={isAuthenticated} canScanCheckin={canScanCheckin}>
+          {header !== 'none' ? (
+            <AppTopNav
+              variant={header}
+              title={title}
+              backHref={backHref}
+              showScan={showScan}
+              isAuthenticated={isAuthenticated}
+              navUser={navUser}
+            />
+          ) : null}
+          <AppShellMain>{children}</AppShellMain>
+        </ScanSheetProvider>
         <BottomNav isAuthenticated={isAuthenticated} />
       </div>
     </BottomNavLayoutProvider>

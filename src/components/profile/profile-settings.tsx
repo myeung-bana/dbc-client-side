@@ -29,6 +29,7 @@ export function ProfileSettingsRow({
   onClick,
   disabled = false,
   showChevron = false,
+  trailing,
   className,
 }: {
   label: ReactNode
@@ -37,15 +38,17 @@ export function ProfileSettingsRow({
   onClick?: () => void
   disabled?: boolean
   showChevron?: boolean
+  trailing?: ReactNode
   className?: string
 }) {
   const content = (
     <>
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className={cn('text-sm', value ? 'text-muted-foreground' : 'font-medium')}>{label}</p>
         {value ? <div className="truncate font-medium">{value}</div> : null}
         {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
       </div>
+      {trailing}
       {showChevron ? (
         <span className="text-muted-foreground">›</span>
       ) : null}

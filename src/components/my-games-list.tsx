@@ -17,7 +17,13 @@ type MyGamesListProps = {
   past: MyBooking[]
 }
 
-function BookingCard({ booking }: { booking: MyBooking }) {
+function BookingCard({
+  booking,
+  showCheckin = false,
+}: {
+  booking: MyBooking
+  showCheckin?: boolean
+}) {
   const [pending, startTransition] = useTransition()
   const isWaitlisted = booking.status === 'waitlisted'
 
@@ -51,7 +57,9 @@ function BookingCard({ booking }: { booking: MyBooking }) {
           <p>{formatSessionVenue(booking.session)}</p>
           {isWaitlisted ? <p>You&apos;re on the waitlist</p> : null}
         </div>
-        {!isWaitlisted ? <CheckinQrDisplay bookingId={booking.id} sessionId={booking.session.id} /> : null}
+        {!isWaitlisted && showCheckin ? (
+          <CheckinQrDisplay bookingId={booking.id} sessionId={booking.session.id} presentation="button" />
+        ) : null}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -86,7 +94,7 @@ export function MyGamesList({ upcoming, past }: MyGamesListProps) {
         {upcoming.length === 0 ? (
           <p className="text-sm text-muted-foreground">No upcoming bookings yet.</p>
         ) : (
-          upcoming.map((booking) => <BookingCard key={booking.id} booking={booking} />)
+          upcoming.map((booking) => <BookingCard key={booking.id} booking={booking} showCheckin />)
         )}
       </TabsContent>
       <TabsContent value="past" className="space-y-3 pt-2">

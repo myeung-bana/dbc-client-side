@@ -6,6 +6,7 @@ import { AppShellMain } from '@/components/app-shell-main'
 import { BottomNavLayoutProvider } from '@/components/bottom-nav-layout-provider'
 import { PwaInstallBanner } from '@/components/pwa-install-banner'
 import { ScanSheetProvider } from '@/components/scan-sheet-provider'
+import { getOrganiserBrowseContext } from '@/lib/spaces/organiser-context'
 
 type NavUser = {
   displayName?: string | null
@@ -34,6 +35,8 @@ export async function AppShell({
   const session = isAuthenticated ? await getOptionalServerSession() : null
   const roles = session?.ok ? getUserRolesFromSession(session.session) : []
   const canScanCheckin = roles.includes('organiser') || roles.includes('super_admin')
+  const organiserContext = isAuthenticated ? await getOrganiserBrowseContext() : null
+  const showManageTab = Boolean(organiserContext?.active)
 
   return (
     <BottomNavLayoutProvider>
@@ -52,7 +55,7 @@ export async function AppShell({
           ) : null}
           <AppShellMain>{children}</AppShellMain>
         </ScanSheetProvider>
-        <BottomNav isAuthenticated={isAuthenticated} />
+        <BottomNav isAuthenticated={isAuthenticated} showManageTab={showManageTab} />
       </div>
     </BottomNavLayoutProvider>
   )

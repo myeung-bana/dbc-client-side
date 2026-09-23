@@ -99,13 +99,20 @@ function NavLink({
 
 type BottomNavProps = {
   isAuthenticated: boolean
+  showManageTab?: boolean
 }
 
-export function BottomNav({ isAuthenticated }: BottomNavProps) {
+export function BottomNav({ isAuthenticated, showManageTab = false }: BottomNavProps) {
   const pathname = usePathname()
   const { isOpen: isLoginOpen, openLogin } = useLoginOverlay()
   const { paddingBottomPx, isStandalone, isIos } = useBottomNavLayout()
-  const items = isAuthenticated ? authItems : guestItems
+  const items = isAuthenticated
+    ? authItems.map((item) =>
+        showManageTab && item.href === '/passes'
+          ? { ...item, href: '/manage-space', label: 'Manage', icon: 'settings' as const }
+          : item,
+      )
+    : guestItems
 
   return (
     <nav

@@ -2,7 +2,6 @@ import { AppShell } from '@/components/app-shell'
 import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { ProfileAccountSection } from '@/components/profile/profile-account-section'
 import { ProfileHero } from '@/components/profile/profile-hero'
-import { ProfileInviteSection } from '@/components/profile/profile-invite-section'
 import { ProfilePreferencesSection } from '@/components/profile/profile-preferences-section'
 import { ProfileSpacesSection } from '@/components/profile/profile-spaces-section'
 import { SignOutButton } from '@/components/sign-out-button'
@@ -62,7 +61,6 @@ export default async function ProfilePage() {
           follows={follows}
           passBalances={passBalances}
         />
-        <ProfileInviteSection />
         <div className="pt-2 [&_button]:w-full">
           <SignOutButton />
         </div>

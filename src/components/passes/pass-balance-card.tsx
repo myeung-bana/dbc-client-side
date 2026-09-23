@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { PlayerQrCard } from '@/components/checkin/player-qr-card'
 import { SpaceLogo } from '@/components/space-logo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,16 +22,10 @@ function redemptionHint(mode: PassRedemptionMode | undefined) {
   if (mode === 'auto_consume') {
     return 'Your credit is used if you do not cancel before the session.'
   }
-  return 'Show your booking QR from My Games when you arrive.'
+  return 'Show your check-in QR from the session when you arrive.'
 }
 
-export function PassBalanceCard({
-  pass,
-  showWalkInQr = false,
-}: {
-  pass: UserSeasonPass
-  showWalkInQr?: boolean
-}) {
+export function PassBalanceCard({ pass }: { pass: UserSeasonPass }) {
   const spaceName = pass.space?.name ?? 'Space'
 
   return (
@@ -68,8 +61,6 @@ export function PassBalanceCard({
             View sessions
           </Button>
         ) : null}
-
-        {showWalkInQr ? <PlayerQrCard spaceId={pass.spaceId} /> : null}
       </CardContent>
     </Card>
   )

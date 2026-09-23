@@ -79,7 +79,7 @@ export function SessionDetailActions({
         {ctaLabel}
       </Button>
       {state === 'already_confirmed' && booking.membershipRole === 'casual' ? (
-        <CheckinQrDisplay sessionId={session.id} />
+        <CheckinQrDisplay sessionId={session.id} presentation="button" />
       ) : null}
       {showCancel ? (
         <Button

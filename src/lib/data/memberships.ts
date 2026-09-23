@@ -21,6 +21,7 @@ export async function listMyMemberships() {
             id
             name
             slug
+            description
             visibility
             logo_url
           }

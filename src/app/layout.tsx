@@ -4,6 +4,7 @@ import { AppleSplashHead } from '@/components/apple-splash-head'
 import { HapticProvider } from '@/components/haptic-provider'
 import { LoginOverlayProvider } from '@/components/login-overlay-provider'
 import { ProfileAvatarProvider } from '@/components/profile-avatar-provider'
+import { SessionRefreshOnResume } from '@/components/session-refresh-on-resume'
 import { Toaster } from '@/components/ui/sonner'
 import {
   createClientAppMetadata,
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LoginOverlayProvider>
             <ProfileAvatarProvider>
               {children}
+              <SessionRefreshOnResume />
               <Toaster richColors closeButton />
             </ProfileAvatarProvider>
           </LoginOverlayProvider>

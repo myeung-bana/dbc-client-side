@@ -53,13 +53,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public routes render fine with an expired session, so don't make every
-  // navigation wait on the Nhost /token round trip. The GraphQL layer reports
-  // JWT expiry, and the next protected navigation refreshes.
-  if (isPublic && !isProtected && pathname !== '/login') {
-    return NextResponse.next()
-  }
-
   const { subdomain, region } = getPublicNhostConfig()
   const refreshed = await refreshStoredSession(session, subdomain, region)
 

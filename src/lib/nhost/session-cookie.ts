@@ -111,7 +111,7 @@ export function getHasuraUserId(session: StoredSession | null | undefined): stri
 }
 
 export function ensureDecodedSession(session: StoredSession): StoredSession {
-  if (session.decodedToken || !session.accessToken) {
+  if (!session.accessToken) {
     return session
   }
 

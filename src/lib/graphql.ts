@@ -1,6 +1,10 @@
 import type { NhostClient } from '@nhost/nhost-js'
 import { getGraphqlRole, getUserRolesFromSession } from '@/lib/nhost/roles'
-import { getOptionalServerSession, getServerNhost } from '@/lib/nhost/server'
+import {
+  getAnonymousServerNhost,
+  getOptionalServerSession,
+  getServerNhost,
+} from '@/lib/nhost/server'
 
 type GraphqlResult<T> =
   | { ok: true; data: T }
@@ -74,7 +78,8 @@ export async function publicGqlRequest<T>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<GraphqlResult<T>> {
-  const nhost = await getServerNhost()
+  const auth = await getOptionalServerSession()
+  const nhost = auth.ok ? await getServerNhost() : await getAnonymousServerNhost()
   return gqlRequest<T>(nhost, query, variables, 'public')
 }
 
@@ -153,7 +158,8 @@ export async function callPublicClientFunction<T>(
   path: string,
   payload: Record<string, unknown>,
 ): Promise<GraphqlResult<T>> {
-  const nhost = await getServerNhost()
+  const auth = await getOptionalServerSession()
+  const nhost = auth.ok ? await getServerNhost() : await getAnonymousServerNhost()
   return postClientFunction<T>(nhost, path, payload)
 }
 

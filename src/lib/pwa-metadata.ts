@@ -130,6 +130,7 @@ export function createClientAppMetadata(): Metadata {
     other: {
       'apple-mobile-web-app-capable': 'yes',
       'mobile-web-app-capable': 'yes',
+      'google-adsense-account': 'ca-pub-6301512886533217',
     },
   }
 }

@@ -60,6 +60,7 @@ function fetchUserProfile(userId: string) {
       query UserProfile($userId: uuid!) {
         user_profiles(where: { user_id: { _eq: $userId } }, limit: 1) {
           user_id
+          onboarding_completed
           onboarding_completed_at
         }
       }
@@ -112,6 +113,7 @@ export const getProfile = cache(async () => {
         }
         user_profiles(where: { user_id: { _eq: $userId } }, limit: 1) {
           user_id
+          onboarding_completed
           onboarding_completed_at
         }
       }
@@ -182,7 +184,7 @@ export async function completeOnboarding() {
       `
         mutation InsertProfile($userId: uuid!, $now: timestamptz!) {
           insert_user_profiles_one(
-            object: { user_id: $userId, onboarding_completed_at: $now }
+            object: { user_id: $userId, onboarding_completed: true, onboarding_completed_at: $now }
           ) {
             user_id
             onboarding_completed_at
@@ -198,7 +200,7 @@ export async function completeOnboarding() {
       mutation CompleteOnboarding($userId: uuid!, $now: timestamptz!) {
         update_user_profiles(
           where: { user_id: { _eq: $userId } }
-          _set: { onboarding_completed_at: $now }
+          _set: { onboarding_completed: true, onboarding_completed_at: $now }
         ) {
           affected_rows
         }
@@ -215,6 +217,6 @@ export async function needsOnboarding() {
   }
 
   return {
-    needsOnboarding: !result.data.profile?.onboarding_completed_at,
+    needsOnboarding: result.data.profile?.onboarding_completed !== true,
   }
 }

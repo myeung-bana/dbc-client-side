@@ -10,7 +10,7 @@ import {
   sessionCookieOptions,
 } from '@/lib/nhost/session-cookie'
 
-const publicPaths = ['/', '/sessions', '/login', '/invite', '/join', '/auth/callback']
+const publicPaths = ['/', '/sessions', '/login', '/register', '/invite', '/join', '/auth/callback']
 const protectedPaths = ['/my-games', '/profile', '/passes', '/manage-space', '/spaces', '/onboarding', '/scan-checkin']
 
 function isPathMatch(pathname: string, paths: string[]) {

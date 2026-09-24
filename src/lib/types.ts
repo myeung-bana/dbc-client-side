@@ -85,6 +85,7 @@ export type MyBooking = {
 
 export type UserProfile = {
   user_id: string
+  onboarding_completed?: boolean
   onboarding_completed_at?: string | null
 }
 

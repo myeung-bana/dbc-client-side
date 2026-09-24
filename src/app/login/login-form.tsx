@@ -156,6 +156,12 @@ export function LoginForm({
           {loading ? 'Signing in…' : 'Sign in with email'}
         </Button>
       </form>
+      <p className="text-center text-sm text-muted-foreground">
+        New to {APP_NAME}?{' '}
+        <Link href="/register" className="font-medium text-foreground underline" onClick={onDismiss}>
+          Create an account
+        </Link>
+      </p>
       {isOverlay ? (
         <Button variant="ghost" size="lg" className="w-full" onClick={onDismiss} disabled={loading}>
           Continue browsing as guest

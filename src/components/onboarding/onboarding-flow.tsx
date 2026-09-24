@@ -99,8 +99,10 @@ export function OnboardingFlow({
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center p-4">
       <Card>
         <CardHeader>
-          <CardTitle>{step === 1 ? 'Set up your profile' : 'Add a profile photo'}</CardTitle>
-          <CardDescription>Step {step} of 2</CardDescription>
+          <CardTitle>{step === 1 ? `Welcome to ${APP_NAME}` : 'Add a profile photo'}</CardTitle>
+          <CardDescription>
+            Step {step} of 2 · You only need to do this once.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {step === 1 ? (
@@ -108,8 +110,8 @@ export function OnboardingFlow({
               <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">What should we call you?</p>
                 <p>
-                  Your display name appears on session rosters and booking lists so other players
-                  know who&apos;s joined.
+                  Your display name shows on session rosters once you start booking. You can join
+                  a space whenever you are ready.
                 </p>
               </div>
               <div className="space-y-2">
@@ -138,10 +140,10 @@ export function OnboardingFlow({
           ) : (
             <>
               <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">Help teammates recognize you</p>
+                <p className="font-medium text-foreground">Help other players recognize you</p>
                 <p>
-                  A profile photo makes it easier to spot familiar faces on session rosters. This
-                  step is optional — you can skip it and add one later.
+                  A photo makes you easier to spot on a roster. This step is optional. You can skip
+                  it and add one later from Profile.
                 </p>
               </div>
               <ProfilePhotoUpload

@@ -12,7 +12,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
+import { SessionTimeRange } from '@/components/session-time-range'
+import { formatSessionVenue } from '@/lib/sessions/format'
 import { toastError, toastSuccess } from '@/lib/toast/haptic-toast'
 import type { Session } from '@/lib/types'
 
@@ -55,7 +56,9 @@ export function BookingSheet({ session, open, onOpenChange, ctaLabel, note }: Bo
           <SheetDescription>{session.title}</SheetDescription>
         </SheetHeader>
         <div className="space-y-2 py-4 text-sm">
-          <p>{formatSessionTimeRange(session)}</p>
+          <p>
+            <SessionTimeRange startsAt={session.starts_at} endsAt={session.ends_at} />
+          </p>
           <p className="text-muted-foreground">{formatSessionVenue(session)}</p>
           <p className="text-muted-foreground">{session.space?.name}</p>
           {note ? <p className="text-muted-foreground">{note}</p> : null}

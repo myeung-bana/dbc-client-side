@@ -1,4 +1,5 @@
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow'
+import { listActiveActivities } from '@/lib/data/activities'
 import { getProfile } from '@/lib/data/profile'
 
 function defaultDisplayName(user: {
@@ -14,13 +15,18 @@ function defaultDisplayName(user: {
 }
 
 export default async function OnboardingPage() {
-  const profileResult = await getProfile()
+  const [profileResult, activitiesResult] = await Promise.all([
+    getProfile(),
+    listActiveActivities(),
+  ])
   const user = profileResult.ok ? profileResult.data.user : null
+  const activities = activitiesResult.ok ? activitiesResult.data.activities : []
 
   return (
     <OnboardingFlow
       initialDisplayName={defaultDisplayName(user)}
       initialAvatarUrl={user?.avatarUrl}
+      activities={activities}
     />
   )
 }

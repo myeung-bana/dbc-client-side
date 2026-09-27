@@ -24,6 +24,11 @@ export async function listMyMemberships() {
             description
             visibility
             logo_url
+            space_activities {
+              id
+              activity_id
+              activity { id name slug }
+            }
           }
         }
       }
@@ -46,6 +51,11 @@ export async function listMyFollows() {
             slug
             visibility
             logo_url
+            space_activities {
+              id
+              activity_id
+              activity { id name slug }
+            }
           }
         }
       }

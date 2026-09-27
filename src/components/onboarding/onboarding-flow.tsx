@@ -5,31 +5,36 @@ import { useRouter } from 'next/navigation'
 import { toastError, toastSuccess, toastWarning } from '@/lib/toast/haptic-toast'
 import { completeOnboardingAction } from '@/app/actions/client'
 import {
+  updateActivityPreferencesAction,
   updateDisplayNameAction,
-  updateUserProfileAction,
   uploadProfilePhotoAction,
 } from '@/app/actions/profile'
+import { ActivityPicker } from '@/components/activity-picker'
 import { ProfilePhotoUpload } from '@/components/onboarding/profile-photo-upload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { APP_NAME } from '@/lib/brand'
+import type { Activity } from '@/lib/types'
 
 type OnboardingFlowProps = {
   initialDisplayName?: string | null
   initialAvatarUrl?: string | null
+  activities?: Activity[]
 }
 
 export function OnboardingFlow({
   initialDisplayName = '',
   initialAvatarUrl = null,
+  activities = [],
 }: OnboardingFlowProps) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [displayName, setDisplayName] = useState(initialDisplayName ?? '')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  const [activityIds, setActivityIds] = useState<string[]>([])
   const [savingName, setSavingName] = useState(false)
   const [pending, startTransition] = useTransition()
 
@@ -56,6 +61,14 @@ export function OnboardingFlow({
 
   function finishOnboarding() {
     startTransition(async () => {
+      if (activityIds.length > 0) {
+        const prefsResult = await updateActivityPreferencesAction(activityIds)
+        if (!prefsResult.ok) {
+          toastError(prefsResult.error)
+          return
+        }
+      }
+
       const result = await completeOnboardingAction()
       if (!result.ok) {
         toastError('error' in result ? result.error : 'Failed to complete onboarding')
@@ -79,29 +92,24 @@ export function OnboardingFlow({
         toastError(uploadResult.error)
         return
       }
-
-      if (uploadResult.avatarUrl) {
-        const profileResult = await updateUserProfileAction({
-          avatarUrl: uploadResult.avatarUrl,
-        })
-        if (!profileResult.ok) {
-          setPhotoError(profileResult.error)
-          toastError(profileResult.error)
-          return
-        }
-      }
     }
 
-    finishOnboarding()
+    setStep(3)
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center p-4">
+    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <Card>
         <CardHeader>
-          <CardTitle>{step === 1 ? `Welcome to ${APP_NAME}` : 'Add a profile photo'}</CardTitle>
+          <CardTitle>
+            {step === 1
+              ? `Welcome to ${APP_NAME}`
+              : step === 2
+                ? 'Add a profile photo'
+                : 'What do you like to join?'}
+          </CardTitle>
           <CardDescription>
-            Step {step} of 2 · You only need to do this once.
+            Step {step} of 3 · You only need to do this once.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -137,7 +145,9 @@ export function OnboardingFlow({
                 {savingName ? 'Saving…' : 'Continue'}
               </Button>
             </>
-          ) : (
+          ) : null}
+
+          {step === 2 ? (
             <>
               <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">Help other players recognize you</p>
@@ -155,8 +165,14 @@ export function OnboardingFlow({
                 error={photoError}
               />
               <div className="space-y-2">
-                <Button className="w-full" haptic="medium" disabled={pending} onClick={() => void onFinishWithPhoto()}>
-                  {pending ? 'Finishing…' : photoFile ? 'Upload & finish' : 'Finish'}
+                <Button
+                  type="button"
+                  className="relative z-10 w-full"
+                  haptic={false}
+                  disabled={pending}
+                  onClick={() => void onFinishWithPhoto()}
+                >
+                  {photoFile ? 'Upload & continue' : 'Continue'}
                 </Button>
                 <div className="flex gap-2">
                   <Button
@@ -171,14 +187,62 @@ export function OnboardingFlow({
                     variant="ghost"
                     className="flex-1"
                     disabled={pending}
-                    onClick={() => finishOnboarding()}
+                    onClick={() => setStep(3)}
                   >
                     Skip for now
                   </Button>
                 </div>
               </div>
             </>
-          )}
+          ) : null}
+
+          {step === 3 ? (
+            <>
+              <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Pick activities you enjoy</p>
+                <p>
+                  We use this to highlight public sessions that match. You can skip and change this
+                  later from Profile.
+                </p>
+              </div>
+              <ActivityPicker
+                activities={activities}
+                selectedIds={activityIds}
+                onChange={setActivityIds}
+              />
+              <div className="space-y-2">
+                <Button
+                  className="w-full"
+                  haptic="medium"
+                  disabled={pending}
+                  onClick={() => finishOnboarding()}
+                >
+                  {pending ? 'Finishing…' : 'Finish'}
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    disabled={pending}
+                    onClick={() => setStep(2)}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="flex-1"
+                    disabled={pending}
+                    onClick={() => {
+                      setActivityIds([])
+                      finishOnboarding()
+                    }}
+                  >
+                    Skip for now
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : null}
         </CardContent>
       </Card>
     </div>

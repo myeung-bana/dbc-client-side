@@ -1,3 +1,13 @@
+export type Activity = {
+  id: string
+  name: string
+  slug: string
+  parent_id?: string | null
+  description?: string | null
+  sort_order?: number
+  status?: 'active' | 'archived'
+}
+
 export type Space = {
   id: string
   name: string
@@ -7,6 +17,11 @@ export type Space = {
   visibility?: 'public' | 'invite_only'
   logo_url?: string | null
   created_at?: string
+  space_activities?: Array<{
+    id: string
+    activity_id: string
+    activity: Activity
+  }>
 }
 
 export type SpaceMembership = {
@@ -57,6 +72,8 @@ export type Session = {
   ends_at: string
   capacity: number
   status: 'scheduled' | 'cancelled'
+  activity_id?: string | null
+  activity?: Activity | null
   space?: { id: string; name: string; slug?: string; logo_url?: string | null } | null
   court?: { id: string; name: string; location?: { id: string; name: string } | null } | null
   location?: { id: string; name: string } | null

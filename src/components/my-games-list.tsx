@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CheckinQrDisplay } from '@/components/checkin/checkin-qr-display'
-import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
+import { SessionTimeRange } from '@/components/session-time-range'
+import { formatSessionVenue } from '@/lib/sessions/format'
 import type { MyBooking } from '@/lib/types'
 
 type MyGamesListProps = {
@@ -53,7 +54,12 @@ function BookingCard({
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <div className="space-y-1 text-muted-foreground">
-          <p>{formatSessionTimeRange(booking.session)}</p>
+          <p>
+            <SessionTimeRange
+              startsAt={booking.session.starts_at}
+              endsAt={booking.session.ends_at}
+            />
+          </p>
           <p>{formatSessionVenue(booking.session)}</p>
           {isWaitlisted ? <p>You&apos;re on the waitlist</p> : null}
         </div>

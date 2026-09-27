@@ -40,6 +40,10 @@ export function ProfilePhotoUpload({
     if (file) {
       setPreviewUrl(URL.createObjectURL(file))
     }
+    // iOS PWA keeps the file input focused after the picker closes and swallows
+    // the next tap, so the upload button never receives it.
+    event.target.value = ''
+    event.target.blur()
   }
 
   const initials = displayName.trim().slice(0, 1).toUpperCase() || '?'
@@ -55,13 +59,15 @@ export function ProfilePhotoUpload({
           ref={inputRef}
           type="file"
           accept={PROFILE_PHOTO_ACCEPT}
-          className="hidden"
+          className="pointer-events-none absolute h-px w-px opacity-0"
+          tabIndex={-1}
           disabled={disabled}
           onChange={onPickFile}
         />
         <Button
           type="button"
           variant="outline"
+          haptic={false}
           disabled={disabled}
           onClick={() => inputRef.current?.click()}
         >

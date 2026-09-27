@@ -11,6 +11,8 @@ const SESSION_FIELDS = `
   ends_at
   capacity
   status
+  activity_id
+  activity { id name slug }
   space { id name slug logo_url }
   court { id name location { id name } }
   location { id name }

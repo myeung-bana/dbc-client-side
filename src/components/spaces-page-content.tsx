@@ -140,6 +140,15 @@ function SpaceRow({
               </Badge>
             ) : null}
           </div>
+          {(entry.space.space_activities ?? []).length > 0 ? (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {entry.space.space_activities?.map((row) => (
+                <Badge key={row.id} variant="secondary" className="text-[10px]">
+                  {row.activity.name}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
         </div>
         {selected ? (
           <Icon name="check" size={18} className="shrink-0 text-primary" />

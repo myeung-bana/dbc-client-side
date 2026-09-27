@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getConfirmedCount } from '@/lib/sessions/capacity'
-import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
+import { SessionTimeRange } from '@/components/session-time-range'
+import { formatSessionVenue } from '@/lib/sessions/format'
 import {
   getBookingCtaLabel,
   isBookingActionEnabled,
@@ -49,6 +50,9 @@ export function SessionCard({
               <div className="min-w-0">
                 <p className="truncate text-xs text-muted-foreground">{session.space?.name}</p>
                 <CardTitle className="text-base">{session.title}</CardTitle>
+                {session.activity?.name ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">{session.activity.name}</p>
+                ) : null}
               </div>
               {spotsLeft === 0 ? <Badge variant="secondary">Waitlist</Badge> : null}
             </div>
@@ -57,7 +61,9 @@ export function SessionCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-3 text-sm text-muted-foreground">
-          <p>{formatSessionTimeRange(session)}</p>
+          <p>
+            <SessionTimeRange startsAt={session.starts_at} endsAt={session.ends_at} />
+          </p>
           <p>{formatSessionVenue(session)}</p>
           <SessionCapacityBar confirmed={confirmedCount} capacity={session.capacity} />
         </div>

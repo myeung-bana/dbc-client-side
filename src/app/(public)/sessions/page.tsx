@@ -9,9 +9,9 @@ import { getOptionalServerSession } from '@/lib/nhost/server'
 export default async function SessionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ space?: string }>
+  searchParams: Promise<{ space?: string; activity?: string }>
 }) {
-  const { space: spaceSlug } = await searchParams
+  const { space: spaceSlug, activity: activityFilter } = await searchParams
 
   const auth = await getOptionalServerSession()
   const isAuthenticated = auth.ok
@@ -34,8 +34,15 @@ export default async function SessionsPage({
         <ProfileAvatarSync avatarUrl={user?.avatarUrl} displayName={displayName} />
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col gap-4">
-        <Suspense key={spaceSlug ?? 'all'} fallback={<SessionsFeedSkeleton />}>
-          <SessionsFeed spaceSlug={spaceSlug} isAuthenticated={isAuthenticated} />
+        <Suspense
+          key={`${spaceSlug ?? 'all'}-${activityFilter ?? 'default'}`}
+          fallback={<SessionsFeedSkeleton />}
+        >
+          <SessionsFeed
+            spaceSlug={spaceSlug}
+            activityFilter={activityFilter ?? null}
+            isAuthenticated={isAuthenticated}
+          />
         </Suspense>
       </div>
     </AppShell>

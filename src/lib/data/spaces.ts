@@ -54,6 +54,11 @@ export async function listBrowsableSpaces() {
           visibility
           status
           logo_url
+          space_activities {
+            id
+            activity_id
+            activity { id name slug }
+          }
         }
       }
     `,

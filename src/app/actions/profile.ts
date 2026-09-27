@@ -115,3 +115,27 @@ export async function uploadProfilePhotoAction(formData: FormData) {
     }
   }
 }
+
+export async function updateActivityPreferencesAction(activityIds: string[]) {
+  const auth = await requireServerSession()
+  if (!auth.ok) {
+    return { ok: false as const, error: 'Unauthorized' }
+  }
+
+  const userId = getHasuraUserId(auth.session)
+  if (!userId) {
+    return { ok: false as const, error: 'User not found' }
+  }
+
+  const { setMyActivityPreferences } = await import('@/lib/data/activities')
+  const result = await setMyActivityPreferences(userId, activityIds)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error }
+  }
+
+  revalidatePath('/profile')
+  revalidatePath('/sessions')
+  revalidatePath('/spaces')
+  revalidatePath('/onboarding')
+  return { ok: true as const }
+}

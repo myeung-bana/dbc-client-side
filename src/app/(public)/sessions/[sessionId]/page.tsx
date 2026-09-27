@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { getBookingState } from '@/lib/data/bookings'
 import { getSessionDetail, getSessionRosterPreview } from '@/lib/data/sessions'
 import { getConfirmedCount } from '@/lib/sessions/capacity'
-import { formatSessionTimeRange, formatSessionVenue } from '@/lib/sessions/format'
+import { SessionTimeRange } from '@/components/session-time-range'
+import { formatSessionVenue } from '@/lib/sessions/format'
 import { getGraphqlRole, getUserRolesFromSession } from '@/lib/nhost/roles'
 import { getHasuraUserId } from '@/lib/nhost/session-cookie'
 import { getOptionalServerSession } from '@/lib/nhost/server'
@@ -58,8 +59,13 @@ export default async function SessionDetailPage({
             />
             <p className="font-medium">{session.space?.name}</p>
           </div>
-          <p className="text-sm">{formatSessionTimeRange(session)}</p>
+          <p className="text-sm">
+            <SessionTimeRange startsAt={session.starts_at} endsAt={session.ends_at} />
+          </p>
           <p className="text-sm text-muted-foreground">{formatSessionVenue(session)}</p>
+          {session.activity?.name ? (
+            <Badge variant="secondary">{session.activity.name}</Badge>
+          ) : null}
           <div className="space-y-2 pt-1">
             <SessionCapacityBar confirmed={confirmedCount} capacity={session.capacity} />
             {isAuthenticated && getGraphqlRole(roles) ? (

@@ -52,40 +52,19 @@ export function ActivityPicker({
   )
 }
 
-type ActivityFilterChipsProps = {
-  activities: Activity[]
-  activeSlug: string | null
-  allHref: string
-  buildHref: (slug: string) => string
-  forYouHref?: string | null
-  showForYou?: boolean
+export type ActivityFilterChip = {
+  id: string
+  label: string
+  href: string
+  active: boolean
 }
 
-export function ActivityFilterChips({
-  activities,
-  activeSlug,
-  allHref,
-  buildHref,
-  forYouHref,
-  showForYou = false,
-}: ActivityFilterChipsProps) {
+export function ActivityFilterChips({ chips }: { chips: ActivityFilterChip[] }) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
-      {showForYou && forYouHref ? (
-        <ChipLink href={forYouHref} active={activeSlug === 'for-you'}>
-          For you
-        </ChipLink>
-      ) : null}
-      <ChipLink href={allHref} active={activeSlug === null || activeSlug === 'all'}>
-        All activities
-      </ChipLink>
-      {activities.map((activity) => (
-        <ChipLink
-          key={activity.id}
-          href={buildHref(activity.slug)}
-          active={activeSlug === activity.slug}
-        >
-          {activity.name}
+      {chips.map((chip) => (
+        <ChipLink key={chip.id} href={chip.href} active={chip.active}>
+          {chip.label}
         </ChipLink>
       ))}
     </div>

@@ -91,6 +91,7 @@ export function AppTopNav({
               <Button
                 variant="ghost"
                 size="icon"
+                haptic={false}
                 aria-label="Open profile"
                 className="rounded-full"
                 render={<Link href="/profile" />}

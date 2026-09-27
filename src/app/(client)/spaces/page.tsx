@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { AppShell } from '@/components/app-shell'
-import { ActivityFilterChips } from '@/components/activity-picker'
+import { ActivityFilterChips, type ActivityFilterChip } from '@/components/activity-picker'
 import { ProfileAvatarSync } from '@/components/profile-avatar-provider'
 import { SpacesPageContent } from '@/components/spaces-page-content'
 import { Badge } from '@/components/ui/badge'
@@ -91,10 +91,22 @@ export default async function SpacesPage({
           <section className="space-y-3">
             <h2 className="text-sm font-medium">Discover public spaces</h2>
             <ActivityFilterChips
-              activities={activities}
-              activeSlug={activityFilter ?? 'all'}
-              allHref="/spaces"
-              buildHref={(slug) => `/spaces?activity=${encodeURIComponent(slug)}`}
+              chips={[
+                {
+                  id: 'all',
+                  label: 'All activities',
+                  href: '/spaces',
+                  active: !activityFilter || activityFilter === 'all',
+                },
+                ...activities.map(
+                  (activity): ActivityFilterChip => ({
+                    id: activity.id,
+                    label: activity.name,
+                    href: `/spaces?activity=${encodeURIComponent(activity.slug)}`,
+                    active: activityFilter === activity.slug,
+                  }),
+                ),
+              ]}
             />
             {discoverSpaces.length === 0 ? (
               <p className="text-sm text-muted-foreground">

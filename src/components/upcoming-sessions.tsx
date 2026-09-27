@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { AdSlot } from '@/components/ad-slot'
 import { ActiveSpaceBar } from '@/components/active-space-bar'
-import { ActivityFilterChips } from '@/components/activity-picker'
+import { ActivityFilterChips, type ActivityFilterChip } from '@/components/activity-picker'
 import { SessionCard } from '@/components/session-card'
 import { SessionsEmptyState } from '@/components/sessions-empty-state'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,31 @@ export async function UpcomingSessions({
 
   const sessions = filterSessions(allSessions, resolvedFilter, preferredIds, activities)
   const spaceSlug = activeSpace?.space.slug
+  const activeSlug = resolvedFilter === 'all' ? 'all' : resolvedFilter
+  const filterChips: ActivityFilterChip[] = [
+    ...(isAuthenticated && hasPreferences
+      ? [
+          {
+            id: 'for-you',
+            label: 'For you',
+            href: buildSessionsHref({ spaceSlug, activity: 'for-you' }),
+            active: activeSlug === 'for-you',
+          },
+        ]
+      : []),
+    {
+      id: 'all',
+      label: 'All activities',
+      href: buildSessionsHref({ spaceSlug, activity: 'all' }),
+      active: activeSlug === 'all',
+    },
+    ...activities.map((activity) => ({
+      id: activity.id,
+      label: activity.name,
+      href: buildSessionsHref({ spaceSlug, activity: activity.slug }),
+      active: activeSlug === activity.slug,
+    })),
+  ]
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -84,16 +109,7 @@ export async function UpcomingSessions({
         isAuthenticated={isAuthenticated}
       />
 
-      {activities.length > 0 ? (
-        <ActivityFilterChips
-          activities={activities}
-          activeSlug={resolvedFilter === 'all' ? 'all' : resolvedFilter}
-          allHref={buildSessionsHref({ spaceSlug, activity: 'all' })}
-          buildHref={(slug) => buildSessionsHref({ spaceSlug, activity: slug })}
-          forYouHref={buildSessionsHref({ spaceSlug, activity: 'for-you' })}
-          showForYou={isAuthenticated && hasPreferences}
-        />
-      ) : null}
+      {activities.length > 0 ? <ActivityFilterChips chips={filterChips} /> : null}
 
       {isAuthenticated && !hasPreferences ? (
         <div className="rounded-lg border bg-muted/30 p-3 text-sm">

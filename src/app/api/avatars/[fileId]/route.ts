@@ -13,10 +13,25 @@ const UUID_PATTERN =
 // Avatars are immutable per file id; callers bust the cache with ?v=<revision>.
 const CACHE_CONTROL = 'private, max-age=3600'
 
-function redirectToFile(url: string) {
-  const response = NextResponse.redirect(url, { status: 307 })
-  response.headers.set('Cache-Control', CACHE_CONTROL)
-  return response
+function imageResponse(storageResponse: Response) {
+  const headers = new Headers()
+  headers.set(
+    'Content-Type',
+    storageResponse.headers.get('content-type') ?? 'application/octet-stream',
+  )
+  headers.set('Cache-Control', CACHE_CONTROL)
+
+  return new NextResponse(storageResponse.body, {
+    status: 200,
+    headers,
+  })
+}
+
+/** Fetch on the server and return bytes. A browser redirect to storage fails to paint. */
+async function fetchImage(url: string) {
+  const storageResponse = await fetch(url, { cache: 'no-store' })
+  if (!storageResponse.ok || !storageResponse.body) return null
+  return imageResponse(storageResponse)
 }
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -31,10 +46,11 @@ export async function GET(_request: Request, context: RouteContext) {
     try {
       const { body } = await admin.storage.getFilePresignedURL(fileId)
       if (body.url) {
-        return redirectToFile(body.url)
+        const response = await fetchImage(body.url)
+        if (response) return response
       }
     } catch {
-      // Fall through to public fetch / session presigned URL.
+      // Fall through to the session URL, then the public file URL.
     }
   }
 
@@ -43,29 +59,16 @@ export async function GET(_request: Request, context: RouteContext) {
     try {
       const { body } = await auth.nhost.storage.getFilePresignedURL(fileId)
       if (body.url) {
-        return redirectToFile(body.url)
+        const response = await fetchImage(body.url)
+        if (response) return response
       }
     } catch {
-      // Fall through to public fetch.
+      // Fall through to the public file URL.
     }
   }
 
-  const storageUrl = getStorageFileUrl(fileId)
-  const storageResponse = await fetch(storageUrl)
+  const response = await fetchImage(getStorageFileUrl(fileId))
+  if (response) return response
 
-  if (!storageResponse.ok || !storageResponse.body) {
-    return NextResponse.json({ error: 'Avatar not found' }, { status: 404 })
-  }
-
-  const headers = new Headers()
-  headers.set(
-    'Content-Type',
-    storageResponse.headers.get('content-type') ?? 'application/octet-stream',
-  )
-  headers.set('Cache-Control', CACHE_CONTROL)
-
-  return new NextResponse(storageResponse.body, {
-    status: 200,
-    headers,
-  })
+  return NextResponse.json({ error: 'Avatar not found' }, { status: 404 })
 }

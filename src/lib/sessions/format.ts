@@ -23,6 +23,68 @@ function zoneDayKey(date: Date) {
   })
 }
 
+const DAY_MS = 86_400_000
+export const SESSION_DATE_WINDOW = 7
+
+export function todayKey(now = new Date()) {
+  return zoneDayKey(now)
+}
+
+export function sessionDayKey(iso: string) {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+  return zoneDayKey(date)
+}
+
+function parseDayKey(key: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null
+  const date = new Date(`${key}T00:00:00+08:00`)
+  if (Number.isNaN(date.getTime()) || zoneDayKey(date) !== key) return null
+  return date
+}
+
+export function isDayKey(value: string | null | undefined): value is string {
+  return !!value && parseDayKey(value) !== null
+}
+
+export function shiftDayKey(dayKey: string, days: number) {
+  const date = parseDayKey(dayKey)
+  if (!date) return null
+  return zoneDayKey(new Date(date.getTime() + days * DAY_MS))
+}
+
+export function daysBetween(fromKey: string, toKey: string) {
+  const from = parseDayKey(fromKey)
+  const to = parseDayKey(toKey)
+  if (!from || !to) return null
+  return Math.round((to.getTime() - from.getTime()) / DAY_MS)
+}
+
+export function buildDateWindow(startKey: string, size = SESSION_DATE_WINDOW) {
+  const days: string[] = []
+  for (let index = 0; index < size; index += 1) {
+    const key = shiftDayKey(startKey, index)
+    if (key) days.push(key)
+  }
+  return days
+}
+
+export function windowStartForDate(selectedKey: string, today: string) {
+  const diff = daysBetween(today, selectedKey)
+  if (diff == null || diff < 0) return today
+  const offset = Math.floor(diff / SESSION_DATE_WINDOW) * SESSION_DATE_WINDOW
+  return shiftDayKey(today, offset) ?? today
+}
+
+export function formatDateChip(dayKey: string) {
+  const date = parseDayKey(dayKey)
+  if (!date) return { weekday: dayKey, day: '' }
+  return {
+    weekday: formatInZone(date, { weekday: 'short' }),
+    day: formatInZone(date, { day: 'numeric' }),
+  }
+}
+
 export function formatSessionTimeRange(
   session: Pick<Session, 'starts_at'> & { ends_at?: string | null },
 ) {

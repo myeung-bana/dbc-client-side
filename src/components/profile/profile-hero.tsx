@@ -11,9 +11,15 @@ type ProfileHeroProps = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  activities?: { id: string; name: string }[]
 }
 
-export function ProfileHero({ displayName, email, avatarUrl }: ProfileHeroProps) {
+export function ProfileHero({
+  displayName,
+  email,
+  avatarUrl,
+  activities = [],
+}: ProfileHeroProps) {
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false)
   const { avatarUrl: liveAvatarUrl, revision, updateAvatarUrl } = useProfileAvatar()
   const resolvedAvatarUrl = liveAvatarUrl ?? avatarUrl ?? null
@@ -37,8 +43,20 @@ export function ProfileHero({ displayName, email, avatarUrl }: ProfileHeroProps)
             <Icon name="camera" size={14} strokeWidth={2.25} />
           </span>
         </button>
-        <h2 className="text-xl font-semibold">{displayName}</h2>
-        {email ? <p className="mt-1 text-sm text-muted-foreground">{email}</p> : null}
+        {email ? <p className="text-sm text-muted-foreground">{email}</p> : null}
+        <h2 className="mt-1 text-xl font-semibold">{displayName}</h2>
+        {activities.length > 0 ? (
+          <ul className="mt-3 flex max-w-sm flex-wrap justify-center gap-2">
+            {activities.map((activity) => (
+              <li
+                key={activity.id}
+                className="rounded-full border bg-muted px-3 py-1 text-xs font-medium text-foreground"
+              >
+                {activity.name}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <Button
           variant="outline"
           size="sm"

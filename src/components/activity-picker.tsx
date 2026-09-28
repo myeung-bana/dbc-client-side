@@ -10,6 +10,8 @@ type ActivityPickerProps = {
   activities: Activity[]
   selectedIds: string[]
   onChange: (ids: string[]) => void
+  max?: number
+  onLimit?: () => void
   className?: string
 }
 
@@ -17,6 +19,8 @@ export function ActivityPicker({
   activities,
   selectedIds,
   onChange,
+  max,
+  onLimit,
   className,
 }: ActivityPickerProps) {
   return (
@@ -30,9 +34,13 @@ export function ActivityPicker({
             onClick={() => {
               if (selected) {
                 onChange(selectedIds.filter((id) => id !== activity.id))
-              } else {
-                onChange([...selectedIds, activity.id])
+                return
               }
+              if (max != null && selectedIds.length >= max) {
+                onLimit?.()
+                return
+              }
+              onChange([...selectedIds, activity.id])
             }}
             className={cn(
               'rounded-full border px-3 py-1.5 text-sm transition-colors',

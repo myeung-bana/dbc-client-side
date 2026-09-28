@@ -107,7 +107,7 @@ export function EditProfilePhotoSheet({
             Your photo appears on session rosters so teammates can recognize you.
           </SheetDescription>
         </SheetHeader>
-        <div className="py-4">
+        <div className="px-4 py-4">
           <ProfilePhotoUpload
             displayName={displayName}
             initialAvatarUrl={initialAvatarUrl}

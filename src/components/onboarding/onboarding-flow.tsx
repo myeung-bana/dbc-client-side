@@ -201,13 +201,15 @@ export function OnboardingFlow({
               <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">Pick activities you enjoy</p>
                 <p>
-                  We use this to highlight public sessions that match. You can skip and change this
-                  later from Profile.
+                  Choose up to 5. We use this to highlight public sessions that match. You can skip
+                  and change this later from Profile.
                 </p>
               </div>
               <ActivityPicker
                 activities={activities}
                 selectedIds={activityIds}
+                max={5}
+                onLimit={() => toastWarning('Choose up to 5 activities')}
                 onChange={setActivityIds}
               />
               <div className="space-y-2">

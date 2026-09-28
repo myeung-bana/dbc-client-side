@@ -60,13 +60,19 @@ export default async function ProfilePage() {
           displayName={displayName}
           email={user?.email}
           avatarUrl={user?.avatarUrl}
+          activities={preferredRows.map((row) => ({
+            id: row.activity_id,
+            name: row.activity.name,
+          }))}
         />
-        <ProfileAccountSection displayName={displayName} email={user?.email} />
-        <ProfilePreferencesSection
+        <ProfileAccountSection
+          displayName={displayName}
+          email={user?.email}
           activities={activities}
           preferredActivityIds={preferredActivityIds}
           preferredActivityNames={preferredActivityNames}
         />
+        <ProfilePreferencesSection />
         <ProfileSpacesSection
           memberships={memberships}
           follows={follows}

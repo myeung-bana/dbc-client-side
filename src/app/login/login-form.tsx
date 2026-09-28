@@ -179,10 +179,11 @@ export function LoginForm({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-dvh flex-col items-center bg-muted/30 px-4 pt-[max(2.5rem,env(safe-area-inset-top))] pb-8">
+      <GachiLogo surface="light" variant="wordmark" height={36} />
+      <div className="flex w-full flex-1 items-center justify-center py-8">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <GachiLogo surface="light" variant="mark" height={28} className="mb-2" />
           <CardTitle>Sign in to {APP_NAME}</CardTitle>
           <CardDescription>
             Browse sessions as a guest anytime. Sign in when you&apos;re ready to book.
@@ -190,6 +191,7 @@ export function LoginForm({
         </CardHeader>
         <CardContent>{formContent}</CardContent>
       </Card>
+      </div>
     </div>
   )
 }

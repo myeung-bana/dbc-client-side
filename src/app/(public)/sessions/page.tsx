@@ -9,9 +9,9 @@ import { getOptionalServerSession } from '@/lib/nhost/server'
 export default async function SessionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ space?: string; activity?: string }>
+  searchParams: Promise<{ space?: string; date?: string }>
 }) {
-  const { space: spaceSlug, activity: activityFilter } = await searchParams
+  const { space: spaceSlug, date: dateFilter } = await searchParams
 
   const auth = await getOptionalServerSession()
   const isAuthenticated = auth.ok
@@ -35,12 +35,12 @@ export default async function SessionsPage({
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <Suspense
-          key={`${spaceSlug ?? 'all'}-${activityFilter ?? 'default'}`}
+          key={`${spaceSlug ?? 'all'}-${dateFilter ?? 'default'}`}
           fallback={<SessionsFeedSkeleton />}
         >
           <SessionsFeed
             spaceSlug={spaceSlug}
-            activityFilter={activityFilter ?? null}
+            dateFilter={dateFilter ?? null}
             isAuthenticated={isAuthenticated}
           />
         </Suspense>

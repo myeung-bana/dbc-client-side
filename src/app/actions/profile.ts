@@ -127,8 +127,13 @@ export async function updateActivityPreferencesAction(activityIds: string[]) {
     return { ok: false as const, error: 'User not found' }
   }
 
+  const uniqueIds = [...new Set(activityIds.filter(Boolean))]
+  if (uniqueIds.length > 5) {
+    return { ok: false as const, error: 'Choose up to 5 activities' }
+  }
+
   const { setMyActivityPreferences } = await import('@/lib/data/activities')
-  const result = await setMyActivityPreferences(userId, activityIds)
+  const result = await setMyActivityPreferences(userId, uniqueIds)
   if (!result.ok) {
     return { ok: false as const, error: result.error }
   }

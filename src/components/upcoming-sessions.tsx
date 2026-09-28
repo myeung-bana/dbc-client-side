@@ -1,134 +1,94 @@
-import Link from 'next/link'
 import { AdSlot } from '@/components/ad-slot'
 import { ActiveSpaceBar } from '@/components/active-space-bar'
-import { ActivityFilterChips, type ActivityFilterChip } from '@/components/activity-picker'
 import { SessionCard } from '@/components/session-card'
+import { SessionDateStrip } from '@/components/session-date-strip'
 import { SessionsEmptyState } from '@/components/sessions-empty-state'
-import { Button } from '@/components/ui/button'
-import { listActiveActivities, listMyActivityPreferences } from '@/lib/data/activities'
 import { listDiscoverableSessions } from '@/lib/data/sessions'
+import {
+  SESSION_DATE_WINDOW,
+  buildDateWindow,
+  formatDateChip,
+  isDayKey,
+  sessionDayKey,
+  todayKey,
+} from '@/lib/sessions/format'
 import type { MySpaceEntry } from '@/lib/spaces/my-spaces'
-import type { Activity, Session } from '@/lib/types'
 
 type UpcomingSessionsProps = {
   activeSpaceId: string | null
   activeSpace: MySpaceEntry | null
   isAuthenticated: boolean
-  activityFilter?: string | null
+  dateFilter?: string | null
 }
 
-function buildSessionsHref(params: {
-  spaceSlug?: string | null
-  activity?: string | null
-}) {
+function buildSessionsHref(params: { spaceSlug?: string | null; date: string }) {
   const search = new URLSearchParams()
   if (params.spaceSlug) search.set('space', params.spaceSlug)
-  if (params.activity) search.set('activity', params.activity)
-  const query = search.toString()
-  return query ? `/sessions?${query}` : '/sessions'
+  search.set('date', params.date)
+  return `/sessions?${search.toString()}`
 }
 
-function filterSessions(
-  sessions: Session[],
-  activityFilter: string | null | undefined,
-  preferredIds: string[],
-  activities: Activity[],
-) {
-  if (!activityFilter || activityFilter === 'all') {
-    return sessions
-  }
-
-  if (activityFilter === 'for-you') {
-    if (preferredIds.length === 0) return sessions
-    return sessions.filter(
-      (session) => session.activity_id && preferredIds.includes(session.activity_id),
-    )
-  }
-
-  const activity = activities.find((item) => item.slug === activityFilter)
-  if (!activity) return sessions
-  return sessions.filter((session) => session.activity_id === activity.id)
+function firstDayWithSessions(days: string[], daysWithSessions: Set<string>) {
+  return days.find((day) => daysWithSessions.has(day)) ?? days[0] ?? null
 }
 
 export async function UpcomingSessions({
   activeSpaceId,
   activeSpace,
   isAuthenticated,
-  activityFilter = null,
+  dateFilter = null,
 }: UpcomingSessionsProps) {
-  const [sessionsResult, activitiesResult, prefsResult] = await Promise.all([
-    listDiscoverableSessions(activeSpaceId ? { spaceId: activeSpaceId } : undefined),
-    listActiveActivities(),
-    isAuthenticated
-      ? listMyActivityPreferences()
-      : Promise.resolve({ ok: true as const, data: { user_activity_preferences: [] } }),
-  ])
+  const sessionsResult = await listDiscoverableSessions(
+    activeSpaceId ? { spaceId: activeSpaceId } : undefined,
+  )
 
   const allSessions = sessionsResult.ok ? sessionsResult.data.sessions : []
-  const activities = activitiesResult.ok ? activitiesResult.data.activities : []
-  const preferredRows = prefsResult.ok ? prefsResult.data.user_activity_preferences : []
-  const preferredIds = preferredRows.map((row) => row.activity_id)
-  const hasPreferences = preferredIds.length > 0
+  const today = todayKey()
+  const daysWithSessions = new Set(
+    allSessions
+      .map((session) => sessionDayKey(session.starts_at))
+      .filter((day): day is string => !!day),
+  )
 
-  const resolvedFilter =
-    activityFilter ?? (hasPreferences && isAuthenticated ? 'for-you' : 'all')
-
-  const sessions = filterSessions(allSessions, resolvedFilter, preferredIds, activities)
+  const stripDays = buildDateWindow(today, SESSION_DATE_WINDOW)
+  const requested =
+    isDayKey(dateFilter) && stripDays.includes(dateFilter) ? dateFilter : null
+  const selectedKey = requested ?? firstDayWithSessions(stripDays, daysWithSessions) ?? today
   const spaceSlug = activeSpace?.space.slug
-  const activeSlug = resolvedFilter === 'all' ? 'all' : resolvedFilter
-  const filterChips: ActivityFilterChip[] = [
-    ...(isAuthenticated && hasPreferences
-      ? [
-          {
-            id: 'for-you',
-            label: 'For you',
-            href: buildSessionsHref({ spaceSlug, activity: 'for-you' }),
-            active: activeSlug === 'for-you',
-          },
-        ]
-      : []),
-    {
-      id: 'all',
-      label: 'All activities',
-      href: buildSessionsHref({ spaceSlug, activity: 'all' }),
-      active: activeSlug === 'all',
-    },
-    ...activities.map((activity) => ({
-      id: activity.id,
-      label: activity.name,
-      href: buildSessionsHref({ spaceSlug, activity: activity.slug }),
-      active: activeSlug === activity.slug,
-    })),
-  ]
+
+  const sessions = allSessions.filter((session) => sessionDayKey(session.starts_at) === selectedKey)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <ActiveSpaceBar
         activeSpace={activeSpace}
-        sessionCount={sessions.length}
+        sessionCount={allSessions.length}
         isAuthenticated={isAuthenticated}
       />
-
-      {activities.length > 0 ? <ActivityFilterChips chips={filterChips} /> : null}
-
-      {isAuthenticated && !hasPreferences ? (
-        <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-          <p className="font-medium">Tell us what you like</p>
-          <p className="mt-1 text-muted-foreground">
-            Pick activities in Profile so we can highlight matching sessions.
-          </p>
-          <Button size="sm" className="mt-2" variant="outline" render={<Link href="/profile" />}>
-            Set activities
-          </Button>
-        </div>
-      ) : null}
 
       {!sessionsResult.ok ? (
         <p className="text-sm text-destructive">{sessionsResult.error}</p>
       ) : null}
 
+      <SessionDateStrip
+        selectedKey={selectedKey}
+        days={stripDays.map((day) => {
+          const chip = formatDateChip(day)
+          return {
+            key: day,
+            weekday: chip.weekday,
+            day: chip.day,
+            hasSessions: daysWithSessions.has(day),
+            href: buildSessionsHref({ spaceSlug, date: day }),
+          }
+        })}
+      />
+
       {sessions.length === 0 ? (
-        <SessionsEmptyState />
+        <SessionsEmptyState
+          title="No sessions on this day"
+          description="There are no sessions starting on this date. Try another day."
+        />
       ) : (
         <div className="space-y-4">
           {sessions.map((session, index) => (

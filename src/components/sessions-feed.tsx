@@ -14,13 +14,13 @@ import { buildMySpaces, hasMySpaces } from '@/lib/spaces/my-spaces'
 
 type SessionsFeedProps = {
   spaceSlug?: string
-  activityFilter?: string | null
+  dateFilter?: string | null
   isAuthenticated: boolean
 }
 
 export async function SessionsFeed({
   spaceSlug,
-  activityFilter,
+  dateFilter,
   isAuthenticated,
 }: SessionsFeedProps) {
   const cookieStore = await cookies()
@@ -82,7 +82,7 @@ export async function SessionsFeed({
         activeSpaceId={activeSpaceId}
         activeSpace={activeSpace}
         isAuthenticated={isAuthenticated}
-        activityFilter={activityFilter}
+        dateFilter={dateFilter}
       />
     </>
   )

@@ -120,6 +120,7 @@ export function EditProfilePhotoSheet({
         <SheetFooter className="flex-col gap-2 sm:flex-col">
           <Button
             className="w-full"
+            haptic={false}
             disabled={pending || !photoFile}
             onClick={() => void onSave()}
           >
@@ -129,6 +130,7 @@ export function EditProfilePhotoSheet({
             <Button
               variant="ghost"
               className="w-full text-destructive"
+              haptic={false}
               disabled={pending}
               onClick={() => void onRemove()}
             >

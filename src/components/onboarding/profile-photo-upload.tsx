@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { PROFILE_PHOTO_ACCEPT } from '@/lib/onboarding/profile-photo-constants'
+import { prepareProfilePhoto } from '@/lib/onboarding/prepare-profile-photo'
 import { getAvatarDisplaySrc } from '@/lib/profile/avatar-url'
 
 type ProfilePhotoUploadProps = {
@@ -24,26 +25,56 @@ export function ProfilePhotoUpload({
   error,
 }: ProfilePhotoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const requestId = useRef(0)
+  const previewRef = useRef<string | null>(null)
+  const [preparing, setPreparing] = useState(false)
+  const [prepareError, setPrepareError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     getAvatarDisplaySrc(initialAvatarUrl) ?? initialAvatarUrl ?? null,
   )
 
+  function replacePreview(next: string | null) {
+    const current = previewRef.current
+    if (current?.startsWith('blob:') && current !== next) URL.revokeObjectURL(current)
+    previewRef.current = next
+    setPreviewUrl(next)
+  }
+
   useEffect(() => {
     if (!selectedFile) {
-      setPreviewUrl(getAvatarDisplaySrc(initialAvatarUrl) ?? initialAvatarUrl ?? null)
+      replacePreview(getAvatarDisplaySrc(initialAvatarUrl) ?? initialAvatarUrl ?? null)
     }
   }, [initialAvatarUrl, selectedFile])
 
-  function onPickFile(event: React.ChangeEvent<HTMLInputElement>) {
+  async function onPickFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
-    onSelectFile(file)
-    if (file) {
-      setPreviewUrl(URL.createObjectURL(file))
-    }
     // iOS PWA keeps the file input focused after the picker closes and swallows
     // the next tap, so the upload button never receives it.
     event.target.value = ''
     event.target.blur()
+
+    if (!file) {
+      onSelectFile(null)
+      return
+    }
+
+    const id = requestId.current + 1
+    requestId.current = id
+    setPreparing(true)
+    setPrepareError(null)
+
+    try {
+      const jpeg = await prepareProfilePhoto(file)
+      if (requestId.current !== id) return
+      onSelectFile(jpeg)
+      replacePreview(URL.createObjectURL(jpeg))
+    } catch (err) {
+      if (requestId.current !== id) return
+      onSelectFile(null)
+      setPrepareError(err instanceof Error ? err.message : 'Could not prepare that photo.')
+    } finally {
+      if (requestId.current === id) setPreparing(false)
+    }
   }
 
   const initials = displayName.trim().slice(0, 1).toUpperCase() || '?'
@@ -61,22 +92,28 @@ export function ProfilePhotoUpload({
           accept={PROFILE_PHOTO_ACCEPT}
           className="pointer-events-none absolute h-px w-px opacity-0"
           tabIndex={-1}
-          disabled={disabled}
+          disabled={disabled || preparing}
           onChange={onPickFile}
         />
         <Button
           type="button"
           variant="outline"
           haptic={false}
-          disabled={disabled}
+          disabled={disabled || preparing}
           onClick={() => inputRef.current?.click()}
         >
-          {selectedFile || previewUrl ? 'Choose a different photo' : 'Choose a photo'}
+          {preparing
+            ? 'Preparing photo…'
+            : selectedFile || previewUrl
+              ? 'Choose a different photo'
+              : 'Choose a photo'}
         </Button>
       </div>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {prepareError || error ? (
+        <p className="text-sm text-destructive">{prepareError || error}</p>
+      ) : null}
       <p className="text-xs text-muted-foreground">
-        JPG, PNG, or WebP up to 5 MB. Your photo appears on session rosters.
+        Photos are saved as JPEG, up to 5 MB. Your photo appears on session rosters.
       </p>
     </div>
   )

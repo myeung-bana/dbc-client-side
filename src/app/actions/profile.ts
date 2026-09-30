@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { clientGqlRequest } from '@/lib/graphql'
 import {
   PROFILE_PHOTO_MAX_BYTES,
-  PROFILE_PHOTO_TYPES,
+  PROFILE_PHOTO_OUTPUT_TYPE,
 } from '@/lib/onboarding/profile-photo-constants'
 import { getHasuraUserId } from '@/lib/nhost/session-cookie'
 import { requireServerSession } from '@/lib/nhost/server'
@@ -87,7 +87,7 @@ export async function uploadProfilePhotoAction(formData: FormData) {
     return { ok: false as const, error: 'Choose an image to upload.' }
   }
 
-  if (!PROFILE_PHOTO_TYPES.includes(file.type)) {
+  if (file.type !== PROFILE_PHOTO_OUTPUT_TYPE) {
     return { ok: false as const, error: 'Use a JPG, PNG, or WebP image.' }
   }
 
